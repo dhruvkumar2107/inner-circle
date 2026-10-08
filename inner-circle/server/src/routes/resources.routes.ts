@@ -53,7 +53,7 @@ router.get('/saved', (req: Request, res: Response) => {
     return res.status(400).json({ error: 'userId required' })
   }
 
-  const resources = getSavedResources(userId, (req.query.saved as any)?.split(',').filter((s: string) => s.trim().length > 0) || [])
+  const resources = getSavedResources(userId as string, (req.query.saved as any)?.split(',').filter((s: string) => s.trim().length > 0) || [])
   res.json({ resources })
 })
 

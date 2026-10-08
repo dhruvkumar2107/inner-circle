@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import User from '../models/User'
-import { inferRisk, demoCase } from '../ai/fuzzy/engine'
+import { validationResult } from 'express-validator'
+import User from '../../models/User.model'
+import { inferRisk, demoCase } from '../../fuzzy/engine'
 
 // GET /api/screening/history - Get user's screening history
 export const getScreeningHistory = async (req: Request, res: Response, next: NextFunction) => {
@@ -130,15 +131,6 @@ export const submitGad7 = async (req: Request, res: Response, next: NextFunction
   }
 }
 
-// GET /api/screening/history - Get screening history
-export const getScreeningHistoryHandler = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    res.json({ screenings: [] })
-  } catch (error: any) {
-    next(error)
-  }
-}
-
 // Demo case endpoint
 export const getDemoCase = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -188,7 +180,6 @@ export default {
   getScreeningHistory,
   submitPhq9,
   submitGad7,
-  getScreeningHistory: getScreeningHistoryHandler,
   getDemoCase,
   checkRuleSanity,
 }

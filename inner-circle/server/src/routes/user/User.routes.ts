@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
-import User from '../models/User'
+import User from '../../models/User.model'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
 
 // JWT verification middleware
 const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
@@ -21,7 +22,7 @@ const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
 }
 
 // Get current user profile
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id
     if (!userId) {
@@ -40,7 +41,7 @@ export const getProfile = async (req: Request, res: Response) => {
 }
 
 // Update user profile
-export const updateProfile = async (req: Request, res: NextFunction) => {
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id
     if (!userId) {
@@ -64,7 +65,7 @@ export const updateProfile = async (req: Request, res: NextFunction) => {
 }
 
 // Change password
-export const changePassword = async (req: Request, res: NextFunction) => {
+export const changePassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id
     if (!userId) {
@@ -99,7 +100,7 @@ export const changePassword = async (req: Request, res: NextFunction) => {
 }
 
 // Delete account
-export const deleteAccount = async (req: Request, res: NextFunction) => {
+export const deleteAccount = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id
     if (!userId) {
@@ -118,10 +119,10 @@ export const deleteAccount = async (req: Request, res: NextFunction) => {
 }
 
 // Verify alias availability
-export const verifyAlias = async (req: Request, res: Response) => {
+export const verifyAlias = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { alias } = req.params
-    const existingUser = await User.findByAlias(alias)
+    const existingUser = await User.findByAlias(alias as string)
     res.json({ success: true, available: !existingUser })
   } catch (error: any) {
     next(error)

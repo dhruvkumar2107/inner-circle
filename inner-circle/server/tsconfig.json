@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "commonjs",
+    "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "include": ["src/**/*"]

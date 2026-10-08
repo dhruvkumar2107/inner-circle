@@ -6,10 +6,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#0EA5C6",
-        secondary: "#6366F1",
-        card: "#F8FAFC",
-        border: "#E2E8F0",
+        primary: "#F8BBD0",
+        secondary: "#EC4899",
+        card: "#FAFAFA",
+        border: "#E8DAF0",
+        background: "#FEFCFF",
+        muted: "#A78FA8",
       }
     },
   },

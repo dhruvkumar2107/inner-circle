@@ -18,6 +18,7 @@ import xss from 'xss-clean'
 import hpp from 'hpp'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { inferRisk } from './fuzzy/engine'
 
 const app = express()
 
@@ -414,7 +415,7 @@ app.post('/api/chat/send', authenticateToken, async (req: any, res: any) => {
       reply = 'I am hearing that you are going through a very difficult time. Please know that you do not have to face this alone. Contact Tele-MANAS at 14416 or emergency services at 112.'
     } else if (/anxious|worry|overwhelm/.test(lower)) {
       reply = 'It sounds like a lot is asking for your attention right now. We can take this one small moment at a time. Try a grounding pause: name 5 things you can see, 4 things you can feel, 3 sounds you can hear.'
-    } else if /sleep/.test(lower)) {
+    } else if (/sleep/.test(lower)) {
       reply = 'A busy mind can make rest feel far away. Try a slow exhale that is a little longer than your inhale. What has your evenings been like lately?'
     } else {
       reply = 'Thank you for sharing that with me. I am here to support you. What else is on your mind?'

@@ -12,7 +12,8 @@ const tokenKey = 'inner-circle-access'
 const aliasKey = 'inner-circle-alias'
 const api = async (path, options = {}) => {
   const token = localStorage.getItem(tokenKey)
-  const response = await fetch(`/api${path}`, {
+  const apiBase = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/$/, '') : ''
+  const response = await fetch(`${apiBase}/api${path}`, {
     ...options,
     credentials: 'include',
     headers: {

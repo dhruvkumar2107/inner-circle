@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.vercel
+.env
+.env.local
+output.txt
+server-output.txt
+vercel_help.txt
