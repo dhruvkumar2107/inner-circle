@@ -71,3 +71,20 @@ export const findUserById = async (id: string): Promise<UserRecord | undefined> 
   }
   return memoryUsers.get(id)
 }
+
+export const listUsers = async (): Promise<UserRecord[]> => {
+  if (isMongoReady()) {
+    const documents = await UserModel.find().select('+passwordHash').lean()
+    return documents.map(document => fromDocument(document as unknown as Record<string, unknown>))
+  }
+  return [...memoryUsers.values()]
+}
+
+export const countUsers = async (): Promise<number> => {
+  if (isMongoReady()) return UserModel.countDocuments()
+  return memoryUsers.size
+}
+
+export const resetMemoryUsers = (): void => {
+  memoryUsers.clear()
+}

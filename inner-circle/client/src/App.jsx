@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, NavLink, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
@@ -156,7 +156,7 @@ function PrivateShell() {
   return <AppShell />
 }
 
-const navItems = [
+const baseNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: Home },
   { to: '/chat', label: 'AI Chat', icon: MessageCircle },
   { to: '/appointments', label: 'Appointments', icon: CalendarDays },
@@ -164,16 +164,41 @@ const navItems = [
   { to: '/forum', label: 'Forum', icon: Users },
 ]
 
+function useRole() {
+  const [role, setRole] = useState(() => localStorage.getItem('inner-circle-role') || 'student')
+  useEffect(() => {
+    api('/auth/me')
+      .then(data => {
+        if (data?.user?.role) {
+          localStorage.setItem('inner-circle-role', data.user.role)
+          if (data.user.alias) localStorage.setItem(aliasKey, data.user.alias)
+          setRole(data.user.role)
+        }
+      })
+      .catch(() => { /* token may be missing; the guard will redirect */ })
+  }, [])
+  return role
+}
+
 function AppShell() {
   const navigate = useNavigate()
   const location = useLocation()
   const alias = localStorage.getItem(aliasKey) || 'Harmonious Aurora'
+  const role = useRole()
   const [helpOpen, setHelpOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const navItems = [
+    ...baseNavItems,
+    ...(role === 'professional' || role === 'admin' ? [{ to: '/professional', label: 'Support desk', icon: ShieldCheck }] : []),
+    ...(role === 'admin' ? [{ to: '/admin', label: 'Admin', icon: BarChart3 }] : []),
+    ...(role === 'admin' || role === 'professional' ? [{ to: '/playground', label: 'Fuzzy play', icon: Activity }] : []),
+  ]
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'professional' ? 'Professional' : role === 'volunteer' ? 'Volunteer' : 'Student · Anonymous'
   const logout = async () => {
     try { await api('/auth/logout', { method: 'POST' }) } catch { /* Local sign-out still clears the browser session. */ }
     localStorage.removeItem(tokenKey)
     localStorage.removeItem(aliasKey)
+    localStorage.removeItem('inner-circle-role')
     navigate('/')
   }
   return (
@@ -182,12 +207,12 @@ function AppShell() {
         <div className="sidebar-brand"><Brand /></div>
         <div className="sidebar-caption">YOUR SPACE</div>
         <nav className="side-nav">{navItems.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} className={({ isActive }) => `side-link ${isActive ? 'side-link-active' : ''}`} onClick={() => setMenuOpen(false)}><Icon size={18} /><span>{label}</span></NavLink>)}</nav>
-        <div className="sidebar-lower"><div className="sidebar-caption">MORE</div><NavLink to="/how-it-works" className="side-link"><Compass size={18} /><span>How it works</span></NavLink><NavLink to="/privacy" className="side-link"><ShieldCheck size={18} /><span>Privacy & safety</span></NavLink><button className="identity-chip" onClick={() => navigate('/settings')}><span className="identity-avatar">{alias.slice(0, 1)}</span><span><b>{alias}</b><small>Student · Anonymous</small></span><ChevronRight size={15} /></button></div>
+        <div className="sidebar-lower"><div className="sidebar-caption">MORE</div><NavLink to="/how-it-works" className="side-link"><Compass size={18} /><span>How it works</span></NavLink><NavLink to="/privacy" className="side-link"><ShieldCheck size={18} /><span>Privacy & safety</span></NavLink><button className="identity-chip" onClick={() => navigate('/settings')}><span className="identity-avatar">{alias.slice(0, 1)}</span><span><b>{alias}</b><small>{roleLabel}</small></span><ChevronRight size={15} /></button></div>
       </aside>
       <div className="workspace">
         <header className="topbar"><button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <X /> : <Menu />}</button><div><b>INNER CIRCLE</b><span>Curated support to meet you where you are.</span></div><div className="topbar-actions"><LanguagePicker /><button className="icon-button" aria-label="Notifications"><Bell size={18} /><i /></button><span className="topbar-alias">{alias}</span><button className="button button-quiet logout-button" onClick={logout}><LogOut size={16} />Logout</button></div></header>
         <main className="page-content" key={location.pathname}><Outlet /></main>
-        <nav className="mobile-tabs">{navItems.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'mobile-tab mobile-tab-active' : 'mobile-tab'}><Icon size={19} /><span>{label === 'Appointments' ? 'Book' : label}</span></NavLink>)}</nav>
+        <nav className="mobile-tabs">{baseNavItems.map(({ to, label, icon: Icon }) => <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'mobile-tab mobile-tab-active' : 'mobile-tab'}><Icon size={19} /><span>{label === 'Appointments' ? 'Book' : label}</span></NavLink>)}</nav>
       </div>
       <button className="help-now" onClick={() => setHelpOpen(true)}><Heart size={16} /> I need help now</button>
       {helpOpen && <SafetyPathway onClose={() => setHelpOpen(false)} />}
@@ -196,6 +221,12 @@ function AppShell() {
 }
 
 function SafetyPathway({ onClose }) {
+  const reported = useRef(false)
+  useEffect(() => {
+    if (reported.current) return
+    reported.current = true
+    api('/safety/help-now', { method: 'POST', body: JSON.stringify({ trigger: 'help-now-button' }) }).catch(() => { /* the pathway still shows locally */ })
+  }, [])
   return <div className="modal-backdrop" role="presentation"><section className="safety-modal" role="dialog" aria-modal="true" aria-labelledby="safety-title"><button className="modal-close" onClick={onClose} aria-label="Close"><X /></button><span className="safety-icon"><Heart size={22} /></span><span className="section-kicker">YOU DON'T HAVE TO BE ALONE</span><h2 id="safety-title">Let's find support together.</h2><p>If you may be in immediate danger, contact emergency services or someone you trust now. Inner Circle is not an emergency service.</p><div className="crisis-options"><a href="tel:14416"><b>Tele-MANAS</b><span>14416 <small>· India mental-health support</small></span></a><a href="tel:18005990019"><b>KIRAN</b><span>1800-599-0019</span></a><a href="tel:112"><b>Emergency services</b><span>112</span></a></div><div className="verify-note">Please verify support numbers and campus contacts before launch.</div><button className="button button-primary full-width" onClick={onClose}>I'm safe for now — continue</button></section></div>
 }
 
@@ -279,25 +310,28 @@ function ChatPage() {
   const [value, setValue] = useState('')
   const [crisis, setCrisis] = useState(false)
   const [typing, setTyping] = useState(false)
-  const send = message => {
+  const send = async message => {
     const text = (message ?? value).trim()
     if (!text) return
     setMessages(items => [...items, { from: 'student', text }])
     setValue('')
-    if (/(kill myself|hurt myself|suicid|want to die|end my life|आत्महत्या|मरना चाहता|ಸಾಯಲು|ಆತ್ಮಹತ್ಯೆ)/i.test(text)) {
-      setCrisis(true)
-      return
-    }
     setTyping(true)
-    window.setTimeout(() => {
+    const fallback = () => {
       const lower = text.toLowerCase()
-      const reply = lower.includes('anxious') || lower.includes('worr') || lower.includes('overwhelm')
+      return lower.includes('anxious') || lower.includes('worr') || lower.includes('overwhelm')
         ? "It sounds like a lot is asking for your attention right now. We can take this one small moment at a time.\n\n**Try a grounding pause:**\n1. Name 5 things you can see.\n2. Notice 4 things you can feel.\n3. Listen for 3 sounds around you.\n\nWould it help to talk about one worry in particular?"
-        : lower.includes('sleep') ? "A busy mind can make rest feel far away. If it feels comfortable, try a slow exhale that's a little longer than your inhale. You might also set aside a few minutes to write down what's on your mind.\n\nWhat has evenings been like for you lately?"
+        : lower.includes('sleep') ? "A busy mind can make rest feel far away. If it feels comfortable, try a slow exhale that's a little longer than your inhale.\n\nWhat have evenings been like for you lately?"
           : "Thank you for sharing that with me. It makes sense that this is on your mind. You don't have to solve everything at once — would you like to tell me a little more about what feels most important right now?"
-      setMessages(items => [...items, { from: 'assistant', text: reply }])
+    }
+    try {
+      const data = await api('/chat', { method: 'POST', body: JSON.stringify({ message: text }) })
+      setMessages(items => [...items, { from: 'assistant', text: data.reply || fallback() }])
+      if (data.crisis?.isCrisis) setCrisis(true)
+    } catch {
+      setMessages(items => [...items, { from: 'assistant', text: fallback() }])
+    } finally {
       setTyping(false)
-    }, 650)
+    }
   }
   const quickReplies = ['I need a calming exercise', 'Feeling overwhelmed', 'Motivation boost', 'Sleep issues']
   return <div className="page-wrap chat-page"><div className="page-heading"><div><span className="section-kicker">A SUPPORTIVE SPACE</span><h1>Mindful chat</h1><p>Share what's on your mind. We'll take it one step at a time.</p></div><span className="gentle-status"><span /> Listening now</span></div><section className="chat-card"><div className="chat-header"><span className="chat-avatar"><Sparkles size={20} /></span><div><b>Inner Circle Guide</b><small><i /> Listening now · AI support, not clinical care</small></div><span className="risk-badge">Risk: {JSON.parse(localStorage.getItem('inner-circle-risk') || 'null')?.level || 'Not assessed'}</span><button className="button button-quiet" onClick={() => setMessages([{ from: 'assistant', text: 'Thank you for taking a moment for yourself. Before you go, what is one feeling you are leaving with?' }])}>End chat</button></div><div className="message-list">{messages.map((message, index) => <div className={`message-row ${message.from === 'student' ? 'message-row-user' : ''}`} key={`${message.from}-${index}`}><div className={`message-bubble ${message.from === 'student' ? 'message-user' : 'message-assistant'}`}>{message.from === 'assistant' ? <ReactMarkdown>{message.text}</ReactMarkdown> : message.text}<time>Just now</time></div></div>)}{typing && <div className="typing-indicator">Inner Circle is thinking gently…</div>}</div><div className="quick-replies">{quickReplies.map(chip => <button key={chip} onClick={() => send(chip)}>{chip}</button>)}</div><form className="chat-input" onSubmit={event => { event.preventDefault(); send() }}><input aria-label="Type your message" value={value} onChange={event => setValue(event.target.value)} placeholder="Type your message…" /><button className="send-button" aria-label="Send message"><Send size={18} /></button></form></section><p className="dashboard-footnote"><ShieldCheck size={15} /> AI can make mistakes. This chat is not a diagnosis or a substitute for professional support.</p>{crisis && <SafetyPathway onClose={() => setCrisis(false)} />}</div>
@@ -395,11 +429,69 @@ function FuzzyPlayground() {
 }
 
 function ProfessionalDashboard() {
-  return <div className="page-wrap"><div className="page-heading"><div><span className="section-kicker">HUMAN-IN-THE-LOOP SUPPORT</span><h1>Professional review queue</h1><p>AI assists with signals. Trained professionals make support decisions.</p></div></div><div className="surface-card empty-state"><ShieldCheck size={24} /><b>No assigned student records in this demo.</b><p>Student-linked records are only available to an assigned professional and access is audit-logged.</p></div></div>
+  const [students, setStudents] = useState([])
+  const [queue, setQueue] = useState([])
+  const [detail, setDetail] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    Promise.all([api('/pro/students'), api('/pro/review-queue')])
+      .then(([s, q]) => { setStudents(s.students); setQueue(q.queue) })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+  const review = async (id, decision) => {
+    setError('')
+    try {
+      await api(`/pro/review/${id}`, { method: 'POST', body: JSON.stringify({ decision }) })
+      setQueue(items => items.filter(item => item.id !== id))
+    } catch (err) { setError(err.message) }
+  }
+  const openTrend = async id => {
+    setError('')
+    try { setDetail(await api(`/pro/students/${id}/trend`)) } catch (err) { setError(err.message) }
+  }
+  const flagged = students.filter(item => item.flagged).length
+  return <div className="page-wrap">
+    <div className="page-heading"><div><span className="section-kicker">HUMAN-IN-THE-LOOP SUPPORT</span><h1>Professional support desk</h1><p>AI assists with signals. Trained professionals make support decisions.</p></div><button className="button button-quiet" onClick={() => window.location.reload()}>Refresh</button></div>
+    {error && <p role="alert" className="form-error">{error}</p>}
+    <div className="stats-grid">{[['Assigned students', students.length], ['Open reviews', queue.length], ['Flagged', flagged]].map(([label, value]) => <article className="surface-card stat-card" key={label}><span>{label}</span><b>{value}</b></article>)}</div>
+    <div className="section-heading section-heading-tight"><div><span className="section-kicker">AI REVIEW QUEUE</span><h2>Items needing a human decision</h2></div></div>
+    <section className="surface-card appointment-list">{queue.length === 0 ? <div className="empty-state"><ShieldCheck size={22} /><b>Nothing waiting for review.</b><p>Escalations appear here for confirmation, adjustment or dismissal.</p></div> : queue.map(item => <div className="appointment-row" key={item.id}><span className="guide-avatar">{(item.alias || 'A').slice(0, 1)}</span><div className="appointment-main"><b>{item.alias}</b><span>{item.summary}</span><div><i className={`appointment-status ${item.severity === 'high' ? 'cancelled' : 'confirmed'}`} />{item.source} · {item.severity} · {new Date(item.createdAt).toLocaleDateString()}</div></div><div className="appointment-actions"><button className="button button-soft button-small" onClick={() => review(item.id, 'confirmed')}>Confirm</button><button className="button button-quiet button-small" onClick={() => review(item.id, 'dismissed')}>Dismiss</button></div></div>)}</section>
+    <div className="section-heading section-heading-tight"><div><span className="section-kicker">ASSIGNED STUDENTS</span><h2>Anonymous records</h2></div></div>
+    <section className="surface-card appointment-list">{loading ? <div className="empty-state">Loading…</div> : students.map(student => <div className="appointment-row" key={student.id}><span className="guide-avatar">{student.alias.slice(0, 1)}</span><div className="appointment-main"><b>{student.alias}</b><span>Tier {student.tier ?? '—'} · {student.level} · risk {student.riskScore != null ? Math.round(student.riskScore) : '—'}{student.trend ? ` · ${student.trend}` : ''}</span>{student.flagged && <div><i className="appointment-status cancelled" />flagged for review</div>}</div><button className="button button-quiet button-small" onClick={() => openTrend(student.id)}>View trace</button></div>)}</section>
+    {detail && <div className="modal-backdrop" role="presentation"><section className="modal-card surface-card" role="dialog" aria-modal="true"><button className="modal-close" onClick={() => setDetail(null)} aria-label="Close"><X /></button><span className="section-kicker">FIRED-RULE TRACE</span><h2>{detail.student.alias}</h2>{detail.latest && <p>Latest risk {Math.round(detail.latest.riskScore)} / 100 · Tier {detail.latest.tier} · {detail.latest.level}</p>}<div className="fired-rules">{detail.firedRules.map(rule => <div className="fired-rule" key={rule.id}><b>{rule.id}</b><span>{rule.text}</span><small>{Math.round(rule.strength * 100)}%</small></div>)}</div><h3>Plain-language narrative</h3><ul>{detail.narrative.map(text => <li key={text}>{text}</li>)}</ul></section></div>}
+  </div>
 }
 
 function AdminDashboard() {
-  return <div className="page-wrap"><div className="page-heading"><div><span className="section-kicker">AGGREGATED VIEW</span><h1>Admin overview</h1><p>Analytics should only show anonymized groups with at least five people.</p></div></div><div className="stats-grid">{[['Registered students', '—'], ['Assessments completed', '—'], ['Support resources', '—'], ['Audit events', '—']].map(([title, value]) => <article className="surface-card stat-card" key={title}><span>{title}</span><b>{value}</b></article>)}</div><div className="surface-card admin-note"><ShieldCheck size={18} /> Individual student records are not shown in the aggregate analytics view.</div></div>
+  const [analytics, setAnalytics] = useState(null)
+  const [audit, setAudit] = useState([])
+  const [error, setError] = useState('')
+  useEffect(() => {
+    Promise.all([api('/admin/analytics'), api('/admin/audit?limit=20')])
+      .then(([a, b]) => { setAnalytics(a); setAudit(b.audit) })
+      .catch(err => setError(err.message))
+  }, [])
+  if (error) return <div className="page-wrap narrow-page"><p role="alert" className="form-error">{error}</p></div>
+  if (!analytics) return <div className="page-wrap narrow-page"><div className="empty-state">Loading analytics…</div></div>
+  const t = analytics.totals
+  const kpis = [['Registered students', t.registeredStudents], ['Assessments completed', t.assessmentsCompleted], ['Check-ins completed', t.checkInsCompleted], ['Risk inferences', t.riskInferences], ['Open reviews', t.openReviews], ['Appointments', analytics.appointmentStats.total]]
+  return <div className="page-wrap">
+    <div className="page-heading"><div><span className="section-kicker">AGGREGATED VIEW · k ≥ {analytics.minCellSize}</span><h1>Admin overview</h1><p>Anonymized analytics. Groups smaller than {analytics.minCellSize} are suppressed.</p></div></div>
+    <div className="stats-grid">{kpis.map(([label, value]) => <article className="surface-card stat-card" key={label}><span>{label}</span><b>{value}</b></article>)}</div>
+    <div className="wellbeing-grid">
+      <article className="surface-card wellbeing-main"><span className="card-label">RISK DISTRIBUTION</span><h3>Screening tiers</h3><div className="progress-metrics">{analytics.riskDistribution.map(bucket => <div key={bucket.level}><span>{bucket.level}</span><b>{bucket.suppressed ? '—' : bucket.count ?? 0}<small> · {bucket.percent}%</small></b><i><em style={{ width: `${bucket.percent}%` }} /></i></div>)}</div>{analytics.riskDistribution.some(b => b.suppressed) && <p className="settings-note">Cells below {analytics.minCellSize} are suppressed to protect privacy.</p>}</article>
+      <article className="surface-card care-plan"><span className="card-label">PEER SUPPORT</span><h3>Community activity</h3><div className="progress-metrics"><div><span>Posts</span><b>{analytics.peerSupport.posts}</b></div><div><span>Reactions</span><b>{analytics.peerSupport.reactions}</b></div><div><span>Hidden for safety</span><b>{analytics.peerSupport.hiddenForSafety}</b></div></div></article>
+    </div>
+    <div className="section-heading section-heading-tight"><div><span className="section-kicker">WEEKLY TREND</span><h2>Last four weeks</h2></div></div>
+    <section className="surface-card appointment-list">{analytics.weeklyTrend.map(week => <div className="appointment-row" key={week.label}><span className="guide-avatar">{week.label}</span><div className="appointment-main"><b>Avg risk {week.avgRisk}</b><span>{week.assessments} assessments · {week.checkIns} check-ins</span></div></div>)}</section>
+    <div className="section-heading section-heading-tight"><div><span className="section-kicker">MOST COMMON CONCERNS</span><h2>By community room</h2></div></div>
+    <section className="surface-card appointment-list">{analytics.commonConcerns.map(item => <div className="appointment-row" key={item.concern}><div className="appointment-main"><b>{item.concern}</b><span>{item.channel.suppressed ? 'suppressed' : `${item.channel.count ?? 0} posts`}</span></div></div>)}</section>
+    <div className="section-heading section-heading-tight"><div><span className="section-kicker">AUDIT LOG</span><h2>Recent admin & professional actions</h2></div></div>
+    <section className="surface-card appointment-list">{audit.length === 0 ? <div className="empty-state">No audit entries yet.</div> : audit.map(entry => <div className="appointment-row" key={entry.id}><span className="guide-avatar">{(entry.role || 'S').slice(0, 1).toUpperCase()}</span><div className="appointment-main"><b>{entry.action}</b><span>{entry.resource}</span><div>{entry.role} · {new Date(entry.ts).toLocaleString()}{entry.targetUserId ? ' · student-linked' : ''}</div></div></div>)}</section>
+    <div className="dashboard-footnote"><ShieldCheck size={15} /> Individual student records are not shown in the aggregate analytics view.</div>
+  </div>
 }
 
 function App() {

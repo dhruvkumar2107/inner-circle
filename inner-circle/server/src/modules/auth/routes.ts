@@ -1,5 +1,5 @@
 import { Response, Router } from 'express'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 import { createToken, jwtSecret, requireAuth } from '../../middleware/auth'
 import { generateUniqueAlias } from './alias'

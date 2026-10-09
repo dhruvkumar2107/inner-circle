@@ -2,11 +2,18 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
-import { z } from 'zod'
 import authRoutes from './modules/auth/routes'
-import { requireAuth } from './middleware/auth'
-import { inferRisk } from './fuzzy/engine'
-import { toPublicForumPost } from './modules/forum/publicPost'
+import riskRoutes from './routes/risk.routes'
+import checkinRoutes from './routes/checkins.routes'
+import chatRoutes from './routes/chat.routes'
+import appointmentRoutes from './routes/appointments.routes'
+import forumRoutes from './routes/forum.routes'
+import resourceRoutes from './routes/resources.routes'
+import professionalRoutes from './routes/professionals.routes'
+import proRoutes from './routes/pro.routes'
+import adminRoutes from './routes/admin.routes'
+import safetyRoutes from './routes/safety.routes'
+import { ensureSeeded } from './seed/demo'
 
 const app = express()
 const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
@@ -28,63 +35,45 @@ app.use(cors({
 app.use(express.json({ limit: '20kb' }))
 app.use('/api/', rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 100,
+  limit: 300,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
 }))
 app.use('/api/auth/', rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 20,
+  limit: 30,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
 }))
 
+// Seed demo personas on first request (idempotent).
+app.use(async (_req, _res, next) => {
+  try {
+    await ensureSeeded()
+  } catch {
+    /* the seed is best-effort; the API still serves an empty demo */
+  }
+  next()
+})
+
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', persistence: process.env.MONGO_URI ? 'mongodb-configured' : 'local-demo-memory' })
 })
+
 app.use('/api/auth', authRoutes)
+app.use('/api/risk', riskRoutes)
+app.use('/api/checkins', checkinRoutes)
+app.use('/api/chat', chatRoutes)
+app.use('/api/appointments', appointmentRoutes)
+app.use('/api/forum', forumRoutes)
+app.use('/api/resources', resourceRoutes)
+app.use('/api/professionals', professionalRoutes)
+app.use('/api/pro', proRoutes)
+app.use('/api/admin', adminRoutes)
+app.use('/api/safety', safetyRoutes)
 
-app.post('/api/risk/infer', requireAuth, (req, res) => {
-  const schema = z.object({
-    phq9: z.number().min(0).max(27),
-    gad7: z.number().min(0).max(21),
-    sentiment: z.number().min(-1).max(1),
-    stress: z.number().min(1).max(10),
-    functional: z.number().min(0).max(10),
-    item9Flag: z.boolean().optional(),
-    crisisDetected: z.boolean().optional(),
-  })
-  const parsed = schema.safeParse(req.body)
-  if (!parsed.success) {
-    res.status(400).json({ error: 'Please provide valid assessment inputs.' })
-    return
-  }
-  const safetyOverride = parsed.data.item9Flag === true || parsed.data.crisisDetected === true
-  res.json(inferRisk({ ...parsed.data, safetyOverride }))
-})
-
-app.get('/api/forum/posts', (_req, res) => {
-  const posts = [
-    {
-      id: 'welcome-1',
-      authorAlias: 'Radiant Meadow',
-      body: 'What is one small thing that helped you reset this week?',
-      room: 'Wins & Gratitude',
-      createdAt: new Date(),
-      authorId: 'server-only-id',
-      authorEmail: 'never-return-this@example.edu',
-    },
-    {
-      id: 'welcome-2',
-      authorAlias: 'Steady Lantern',
-      body: 'A quiet reminder: taking a pause is also progress.',
-      room: 'General',
-      createdAt: new Date(),
-      authorId: 'another-server-only-id',
-      realName: 'Private Example Name',
-    },
-  ]
-  res.json({ posts: posts.map(post => toPublicForumPost(post)) })
+app.use((_req, res) => {
+  res.status(404).json({ error: 'Not found.' })
 })
 
 app.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
