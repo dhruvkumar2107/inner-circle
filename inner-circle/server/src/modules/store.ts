@@ -74,6 +74,16 @@ export interface AppointmentRecord {
   history: Array<{ action: string; at: Date; note?: string }>
 }
 
+export interface ForumCommentRecord {
+  id: string
+  postId: string
+  authorId: string
+  authorAlias: string
+  body: string
+  replies: Array<{ id: string; authorId: string; authorAlias: string; body: string; createdAt: Date }>
+  createdAt: Date
+}
+
 export interface ForumPostRecord {
   id: string
   roomId: string
@@ -82,10 +92,12 @@ export interface ForumPostRecord {
   authorId: string
   body: string
   reactions: { support: number; relate: number; grow: number }
+  reactedBy?: Record<string, Array<'support' | 'relate' | 'grow'>>
   reports: number
   status: 'visible' | 'hidden'
   flaggedCrisis: boolean
   createdAt: Date
+  updatedAt?: Date
 }
 
 export interface FlagRecord {
@@ -125,14 +137,39 @@ export interface ProfessionalProfile {
   availability: string[]
 }
 
+export interface ChatSessionRecord {
+  id: string
+  userId: string
+  title: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface ChatMessageRecord {
+  id: string
+  sessionId: string
+  userId: string
+  role: 'user' | 'assistant'
+  text: string
+  sentiment?: number
+  topic?: string
+  crisis?: boolean
+  suggestions?: Array<{ label: string; prompt: string }>
+  provider?: 'llm' | 'rules'
+  createdAt: Date
+}
+
 const assessments: AssessmentRecord[] = []
 const checkins: CheckinRecord[] = []
 const inferences: RiskInferenceRecord[] = []
 const appointments: AppointmentRecord[] = []
+export const forumComments: ForumCommentRecord[] = []
 const forumPosts: ForumPostRecord[] = []
 const flags: FlagRecord[] = []
 const auditLogs: AuditRecord[] = []
 const professionalProfiles: ProfessionalProfile[] = []
+const chatSessions: ChatSessionRecord[] = []
+const chatMessages: ChatMessageRecord[] = []
 
 export const createId = (): string => randomUUID()
 
@@ -213,6 +250,46 @@ export const listForumPosts = (roomId?: string): ForumPostRecord[] =>
 export const findForumPost = (id: string): ForumPostRecord | undefined =>
   forumPosts.find(item => item.id === id)
 
+export const updateForumPost = (id: string, patch: Partial<ForumPostRecord>): ForumPostRecord | undefined => {
+  const post = forumPosts.find(item => item.id === id)
+  if (!post) return undefined
+  Object.assign(post, patch)
+  if (!post.updatedAt) post.updatedAt = new Date()
+  return post
+}
+
+export const deleteForumPost = (id: string): boolean => {
+  const index = forumPosts.findIndex(item => item.id === id)
+  if (index === -1) return false
+  forumPosts.splice(index, 1)
+  for (let i = forumComments.length - 1; i >= 0; i--) {
+    if (forumComments[i].postId === id) forumComments.splice(i, 1)
+  }
+  return true
+}
+
+export const addForumComment = (record: Omit<ForumCommentRecord, 'id' | 'replies'>): ForumCommentRecord => {
+  const full: ForumCommentRecord = { ...record, id: createId(), replies: [] }
+  forumComments.push(full)
+  return full
+}
+
+export const listForumComments = (postId: string): ForumCommentRecord[] =>
+  forumComments.filter(item => item.postId === postId).sort((a, b) => +a.createdAt - +b.createdAt)
+
+export const findForumComment = (id: string): ForumCommentRecord | undefined => forumComments.find(item => item.id === id)
+
+export const addForumReply = (
+  commentId: string,
+  reply: Omit<ForumCommentRecord['replies'][number], 'id'>
+): ForumCommentRecord['replies'][number] | undefined => {
+  const comment = forumComments.find(item => item.id === commentId)
+  if (!comment) return undefined
+  const full = { ...reply, id: createId() }
+  comment.replies.push(full)
+  return full
+}
+
 export const allForumPosts = (): ForumPostRecord[] => forumPosts
 
 /* --------------------------------- flags -------------------------------- */
@@ -254,6 +331,47 @@ export const listProfessionals = (): ProfessionalProfile[] => [...professionalPr
 export const findProfessional = (id: string): ProfessionalProfile | undefined =>
   professionalProfiles.find(item => item.id === id)
 
+/* ------------------------------ chat sessions --------------------------- */
+
+export const createChatSession = (userId: string, title = 'New conversation'): ChatSessionRecord => {
+  const now = new Date()
+  const session: ChatSessionRecord = { id: createId(), userId, title, createdAt: now, updatedAt: now }
+  chatSessions.push(session)
+  return session
+}
+
+export const listChatSessions = (userId: string): ChatSessionRecord[] =>
+  chatSessions.filter(item => item.userId === userId).sort((a, b) => +b.updatedAt - +a.updatedAt)
+
+export const findChatSession = (id: string, userId?: string): ChatSessionRecord | undefined =>
+  chatSessions.find(item => item.id === id && (!userId || item.userId === userId))
+
+export const touchChatSession = (id: string, title?: string): void => {
+  const session = chatSessions.find(item => item.id === id)
+  if (!session) return
+  session.updatedAt = new Date()
+  if (title) session.title = title.slice(0, 80)
+}
+
+export const removeChatSession = (id: string, userId: string): boolean => {
+  const index = chatSessions.findIndex(item => item.id === id && item.userId === userId)
+  if (index === -1) return false
+  chatSessions.splice(index, 1)
+  for (let i = chatMessages.length - 1; i >= 0; i--) {
+    if (chatMessages[i].sessionId === id) chatMessages.splice(i, 1)
+  }
+  return true
+}
+
+export const addChatMessage = (record: Omit<ChatMessageRecord, 'id'>): ChatMessageRecord => {
+  const full: ChatMessageRecord = { ...record, id: createId() }
+  chatMessages.push(full)
+  return full
+}
+
+export const listChatMessages = (sessionId: string): ChatMessageRecord[] =>
+  chatMessages.filter(item => item.sessionId === sessionId).sort((a, b) => +a.createdAt - +b.createdAt)
+
 /* --------------------------------- trend -------------------------------- */
 
 export const computeTrend = (scores: number[]): 'Improving' | 'Stable' | 'Worsening' => {
@@ -285,4 +403,7 @@ export const resetDomainStore = (): void => {
   flags.length = 0
   auditLogs.length = 0
   professionalProfiles.length = 0
+  chatSessions.length = 0
+  chatMessages.length = 0
+  forumComments.length = 0
 }

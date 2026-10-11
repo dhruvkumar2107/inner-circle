@@ -327,13 +327,14 @@ function ChatPage() {
       const data = await api('/chat', { method: 'POST', body: JSON.stringify({ message: text }) })
       setMessages(items => [...items, { from: 'assistant', text: data.reply || fallback() }])
       if (data.crisis?.isCrisis) setCrisis(true)
+      // suggestions from server can replace quick replies if desired
     } catch {
       setMessages(items => [...items, { from: 'assistant', text: fallback() }])
     } finally {
       setTyping(false)
     }
   }
-  const quickReplies = ['I need a calming exercise', 'Feeling overwhelmed', 'Motivation boost', 'Sleep issues']
+  const quickReplies = ['I need a calming exercise', 'Feeling overwhelmed', 'I feel lonely', 'Sleep issues', 'Help me focus']
   return <div className="page-wrap chat-page"><div className="page-heading"><div><span className="section-kicker">A SUPPORTIVE SPACE</span><h1>Mindful chat</h1><p>Share what's on your mind. We'll take it one step at a time.</p></div><span className="gentle-status"><span /> Listening now</span></div><section className="chat-card"><div className="chat-header"><span className="chat-avatar"><Sparkles size={20} /></span><div><b>Inner Circle Guide</b><small><i /> Listening now · AI support, not clinical care</small></div><span className="risk-badge">Risk: {JSON.parse(localStorage.getItem('inner-circle-risk') || 'null')?.level || 'Not assessed'}</span><button className="button button-quiet" onClick={() => setMessages([{ from: 'assistant', text: 'Thank you for taking a moment for yourself. Before you go, what is one feeling you are leaving with?' }])}>End chat</button></div><div className="message-list">{messages.map((message, index) => <div className={`message-row ${message.from === 'student' ? 'message-row-user' : ''}`} key={`${message.from}-${index}`}><div className={`message-bubble ${message.from === 'student' ? 'message-user' : 'message-assistant'}`}>{message.from === 'assistant' ? <ReactMarkdown>{message.text}</ReactMarkdown> : message.text}<time>Just now</time></div></div>)}{typing && <div className="typing-indicator">Inner Circle is thinking gently…</div>}</div><div className="quick-replies">{quickReplies.map(chip => <button key={chip} onClick={() => send(chip)}>{chip}</button>)}</div><form className="chat-input" onSubmit={event => { event.preventDefault(); send() }}><input aria-label="Type your message" value={value} onChange={event => setValue(event.target.value)} placeholder="Type your message…" /><button className="send-button" aria-label="Send message"><Send size={18} /></button></form></section><p className="dashboard-footnote"><ShieldCheck size={15} /> AI can make mistakes. This chat is not a diagnosis or a substitute for professional support.</p>{crisis && <SafetyPathway onClose={() => setCrisis(false)} />}</div>
 }
 
