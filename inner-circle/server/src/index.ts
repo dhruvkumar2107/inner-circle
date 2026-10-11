@@ -13,14 +13,17 @@ const port = Number(process.env.PORT ?? 4000)
 const start = async (): Promise<void> => {
   if (process.env.MONGO_URI) {
     try {
-      await mongoose.connect(process.env.MONGO_URI)
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+      })
       console.info('Connected to MongoDB')
     } catch (error) {
       console.error('MongoDB connection error:', (error as Error).message.substring(0, 200))
-      console.warn('Falling back to the in-memory demo store.')
+      console.warn('Falling back to the local demo store (accounts persist to disk).')
     }
   } else {
-    console.info('No MONGO_URI set — using the in-memory demo store (seeded).')
+    console.info('No MONGO_URI set — using the local demo store (accounts persist to disk).')
   }
 
   const { users } = await ensureSeeded()

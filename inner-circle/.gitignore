@@ -6,3 +6,4 @@ dist/
 output.txt
 server-output.txt
 vercel_help.txt
+.data/

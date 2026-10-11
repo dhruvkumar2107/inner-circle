@@ -13,9 +13,13 @@ npm install
 npm run dev
 ```
 
-The Vite client runs at <http://localhost:5173> and the API at <http://localhost:4000>. Register a demo student account to enter the app. If `MONGO_URI` is blank, the API uses a clearly logged in-memory demo store; accounts are lost when the API process stops. Set a MongoDB URI for persistence.
+The Vite client runs at <http://localhost:5173> and the API at <http://localhost:4000>. Register a student account to enter the app.
+
+**Persistence.** When `MONGO_URI` is set and reachable, users are stored in MongoDB. Otherwise the API automatically falls back to a local demo store that keeps accounts in memory and mirrors them to `server/.data/auth-users.json`, so registration and login survive API restarts without any database setup. (On serverless hosts the mirror is written to the platform temp directory; set `MONGO_URI` for durable multi-instance persistence.) Set `AUTH_STORE_PATH` to override the file location. The health endpoint at `/api/health` reports which store is active.
 
 Copy `.env.example` to `.env` and set a long, random `JWT_SECRET` before using a persistent database or deploying. Never use the example secret in production. LLM provider settings are reserved for the adapter phase; the current chat demo uses a local response flow and requires no external API key.
+
+**Deploying to Vercel.** `vercel.json` builds the client and serves the API from `api/index.ts`. Set `JWT_SECRET` (and `MONGO_URI` for durable accounts) in the project's environment variables; `CORS_ORIGIN` is optional because the deployment's own origin is allowed automatically.
 
 ## Implemented in this build
 

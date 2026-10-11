@@ -1,10 +1,62 @@
 import { randomUUID } from 'node:crypto'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import mongoose from 'mongoose'
 import { UserModel, UserRecord, UserRole } from '../users/userModel'
 
 type NewUser = Omit<UserRecord, 'id' | 'createdAt' | 'failedLoginAttempts'>
 
 const memoryUsers = new Map<string, UserRecord>()
+
+/**
+ * When MongoDB is not configured/reachable the API keeps users in memory. To
+ * make registration and login survive process restarts (and warm serverless
+ * instances) we mirror that memory to a small JSON file. Tests stay purely
+ * in-memory so suites remain hermetic.
+ */
+const persistenceEnabled = process.env.NODE_ENV !== 'test'
+
+const storeFile = (): string => {
+  if (process.env.AUTH_STORE_PATH) return process.env.AUTH_STORE_PATH
+  if (process.env.VERCEL) return path.join(os.tmpdir(), 'inner-circle-auth.json')
+  return path.resolve(__dirname, '../../../.data/auth-users.json')
+}
+
+const persistMemoryUsers = (): void => {
+  if (!persistenceEnabled || isMongoReady()) return
+  try {
+    const file = storeFile()
+    mkdirSync(path.dirname(file), { recursive: true })
+    const tmp = `${file}.${process.pid}.tmp`
+    writeFileSync(tmp, JSON.stringify([...memoryUsers.values()]), 'utf8')
+    renameSync(tmp, file)
+  } catch {
+    /* read-only filesystem: keep working from memory only */
+  }
+}
+
+const hydrateMemoryUsers = (): void => {
+  if (!persistenceEnabled) return
+  try {
+    const file = storeFile()
+    if (!existsSync(file)) return
+    const parsed = JSON.parse(readFileSync(file, 'utf8'))
+    if (!Array.isArray(parsed)) return
+    for (const record of parsed as Array<Record<string, unknown>>) {
+      if (typeof record?.id !== 'string' || typeof record?.email !== 'string') continue
+      memoryUsers.set(record.id, {
+        ...(record as unknown as UserRecord),
+        createdAt: record.createdAt ? new Date(record.createdAt as string) : new Date(),
+        lockUntil: record.lockUntil ? new Date(record.lockUntil as string) : undefined,
+      })
+    }
+  } catch {
+    /* corrupt or unreadable store: start fresh */
+  }
+}
+
+hydrateMemoryUsers()
 
 const fromDocument = (document: Record<string, unknown>): UserRecord => ({
   id: String(document._id),
@@ -50,6 +102,7 @@ export const insertUser = async (user: NewUser): Promise<UserRecord> => {
     createdAt: new Date(),
   }
   memoryUsers.set(record.id, record)
+  persistMemoryUsers()
   return record
 }
 
@@ -62,6 +115,7 @@ export const updateUser = async (user: UserRecord): Promise<void> => {
     return
   }
   memoryUsers.set(user.id, user)
+  persistMemoryUsers()
 }
 
 export const findUserById = async (id: string): Promise<UserRecord | undefined> => {
@@ -87,4 +141,5 @@ export const countUsers = async (): Promise<number> => {
 
 export const resetMemoryUsers = (): void => {
   memoryUsers.clear()
+  persistMemoryUsers()
 }

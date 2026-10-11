@@ -2,6 +2,7 @@ import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
+import mongoose from 'mongoose'
 import authRoutes from './modules/auth/routes'
 import riskRoutes from './routes/risk.routes'
 import checkinRoutes from './routes/checkins.routes'
@@ -16,11 +17,19 @@ import safetyRoutes from './routes/safety.routes'
 import { ensureSeeded } from './seed/demo'
 
 const app = express()
-const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:5174,http://localhost:3000')
   .split(',')
   .map(origin => origin.trim())
+  .filter(Boolean)
+
+// Allow the deployment's own origin when hosted (e.g. Vercel preview/production)
+// so same-origin API calls keep working without an explicit CORS_ORIGIN.
+if (process.env.VERCEL_URL) allowedOrigins.push(`https://${process.env.VERCEL_URL}`)
 
 app.disable('x-powered-by')
+// Behind Vercel/most proxies the client IP arrives via X-Forwarded-For; this is
+// required for express-rate-limit to read it correctly instead of erroring.
+app.set('trust proxy', 1)
 app.use(helmet())
 app.use(cors({
   credentials: true,
@@ -29,7 +38,9 @@ app.use(cors({
       callback(null, true)
       return
     }
-    callback(new Error('Origin is not allowed by CORS'))
+    // Never throw on an unknown origin: same-origin requests still work and
+    // disallowed cross-origin callers simply get no CORS headers.
+    callback(null, false)
   },
 }))
 app.use(express.json({ limit: '20kb' }))
@@ -57,7 +68,12 @@ app.use(async (_req, _res, next) => {
 })
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', persistence: process.env.MONGO_URI ? 'mongodb-configured' : 'local-demo-memory' })
+  const mongoReady = mongoose.connection.readyState === 1
+  res.json({
+    status: 'ok',
+    persistence: mongoReady ? 'mongodb' : 'local-demo-store',
+    mongoConfigured: Boolean(process.env.MONGO_URI),
+  })
 })
 
 app.use('/api/auth', authRoutes)
