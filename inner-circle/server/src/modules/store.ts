@@ -74,14 +74,24 @@ export interface AppointmentRecord {
   history: Array<{ action: string; at: Date; note?: string }>
 }
 
+export interface ForumReplyRecord {
+  id: string
+  authorId: string
+  authorAlias: string
+  body: string
+  createdAt: Date
+  updatedAt?: Date
+}
+
 export interface ForumCommentRecord {
   id: string
   postId: string
   authorId: string
   authorAlias: string
   body: string
-  replies: Array<{ id: string; authorId: string; authorAlias: string; body: string; createdAt: Date }>
+  replies: ForumReplyRecord[]
   createdAt: Date
+  updatedAt?: Date
 }
 
 export interface ForumPostRecord {
@@ -90,14 +100,22 @@ export interface ForumPostRecord {
   room: string
   authorAlias: string
   authorId: string
+  title?: string
   body: string
   reactions: { support: number; relate: number; grow: number }
   reactedBy?: Record<string, Array<'support' | 'relate' | 'grow'>>
   reports: number
+  reportedBy?: string[]
   status: 'visible' | 'hidden'
   flaggedCrisis: boolean
   createdAt: Date
   updatedAt?: Date
+}
+
+export interface SavedResourceRecord {
+  userId: string
+  resourceKey: string
+  savedAt: Date
 }
 
 export interface FlagRecord {
@@ -170,6 +188,7 @@ const auditLogs: AuditRecord[] = []
 const professionalProfiles: ProfessionalProfile[] = []
 const chatSessions: ChatSessionRecord[] = []
 const chatMessages: ChatMessageRecord[] = []
+const savedResources: SavedResourceRecord[] = []
 
 export const createId = (): string => randomUUID()
 
@@ -279,18 +298,79 @@ export const listForumComments = (postId: string): ForumCommentRecord[] =>
 
 export const findForumComment = (id: string): ForumCommentRecord | undefined => forumComments.find(item => item.id === id)
 
+export const updateForumComment = (id: string, patch: Partial<ForumCommentRecord>): ForumCommentRecord | undefined => {
+  const comment = forumComments.find(item => item.id === id)
+  if (!comment) return undefined
+  Object.assign(comment, patch)
+  comment.updatedAt = new Date()
+  return comment
+}
+
+/**
+ * Delete a comment. If the comment itself is a reply target it is removed;
+ * removing a comment also removes its nested replies.
+ */
+export const deleteForumComment = (id: string): boolean => {
+  const index = forumComments.findIndex(item => item.id === id)
+  if (index === -1) return false
+  forumComments.splice(index, 1)
+  return true
+}
+
 export const addForumReply = (
   commentId: string,
-  reply: Omit<ForumCommentRecord['replies'][number], 'id'>
-): ForumCommentRecord['replies'][number] | undefined => {
+  reply: Omit<ForumReplyRecord, 'id'>
+): ForumReplyRecord | undefined => {
   const comment = forumComments.find(item => item.id === commentId)
   if (!comment) return undefined
-  const full = { ...reply, id: createId() }
+  const full: ForumReplyRecord = { ...reply, id: createId() }
   comment.replies.push(full)
   return full
 }
 
+export const findForumReply = (id: string): ForumReplyRecord | undefined =>
+  forumComments.flatMap(comment => comment.replies).find(reply => reply.id === id)
+
+export const deleteForumReply = (id: string): boolean => {
+  for (const comment of forumComments) {
+    const index = comment.replies.findIndex(reply => reply.id === id)
+    if (index >= 0) {
+      comment.replies.splice(index, 1)
+      return true
+    }
+  }
+  return false
+}
+
+export const countForumComments = (postId: string): number => {
+  const comments = forumComments.filter(item => item.postId === postId)
+  return comments.reduce((total, comment) => total + 1 + comment.replies.length, 0)
+}
+
 export const allForumPosts = (): ForumPostRecord[] => forumPosts
+
+/* ----------------------------- saved resources -------------------------- */
+
+export const listSavedResources = (userId: string): SavedResourceRecord[] =>
+  savedResources.filter(item => item.userId === userId).sort((a, b) => +b.savedAt - +a.savedAt)
+
+export const isSavedResource = (userId: string, resourceKey: string): boolean =>
+  savedResources.some(item => item.userId === userId && item.resourceKey === resourceKey)
+
+export const saveResource = (userId: string, resourceKey: string): SavedResourceRecord => {
+  const existing = savedResources.find(item => item.userId === userId && item.resourceKey === resourceKey)
+  if (existing) return existing
+  const record: SavedResourceRecord = { userId, resourceKey, savedAt: new Date() }
+  savedResources.push(record)
+  return record
+}
+
+export const removeSavedResource = (userId: string, resourceKey: string): boolean => {
+  const index = savedResources.findIndex(item => item.userId === userId && item.resourceKey === resourceKey)
+  if (index === -1) return false
+  savedResources.splice(index, 1)
+  return true
+}
 
 /* --------------------------------- flags -------------------------------- */
 
@@ -406,4 +486,5 @@ export const resetDomainStore = (): void => {
   chatSessions.length = 0
   chatMessages.length = 0
   forumComments.length = 0
+  savedResources.length = 0
 }

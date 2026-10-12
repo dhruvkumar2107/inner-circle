@@ -99,4 +99,102 @@ describe('Inner Circle API end-to-end', () => {
     expect(res.body.totals.registeredStudents).toBeGreaterThan(0)
     expect(res.body.minCellSize).toBe(5)
   })
+
+  it('keeps chat context across messages in the same session', async () => {
+    const session = await request(app)
+      .post('/api/chat/sessions')
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+    expect(session.status).toBe(201)
+    const sessionId = session.body.session.id
+
+    const first = await request(app)
+      .post('/api/chat')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ message: 'I am really stressed about my exams', sessionId })
+    expect(first.status).toBe(200)
+    expect(first.body.sessionId).toBe(sessionId)
+    expect(first.body.message.role).toBe('assistant')
+    expect(Array.isArray(first.body.suggestions)).toBe(true)
+
+    const second = await request(app)
+      .post('/api/chat')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ message: 'Talking about it helps a little', sessionId })
+    expect(second.status).toBe(200)
+    expect(second.body.sessionId).toBe(sessionId)
+
+    const conversation = await request(app)
+      .get(`/api/chat/sessions/${sessionId}`)
+      .set('Authorization', `Bearer ${token}`)
+    expect(conversation.status).toBe(200)
+    expect(conversation.body.messages.length).toBe(4)
+    expect(conversation.body.messages[0].role).toBe('user')
+    expect(conversation.body.messages[3].role).toBe('assistant')
+  })
+
+  it('supports the full anonymous community flow', async () => {
+    const created = await request(app)
+      .post('/api/forum/posts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ roomId: 'wins-gratitude', body: 'Small win today: I studied for two focused hours and took a walk.' })
+    expect(created.status).toBe(201)
+    const postId = created.body.post.id
+    expect(created.body.post.mine).toBe(true)
+    expect(created.body.post.authorId).toBeUndefined()
+
+    const reacted = await request(app)
+      .post(`/api/forum/posts/${postId}/react`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ type: 'support' })
+    expect(reacted.status).toBe(200)
+    expect(reacted.body.post.reactions.support).toBe(1)
+    expect(reacted.body.post.reacted).toContain('support')
+
+    const comment = await request(app)
+      .post(`/api/forum/posts/${postId}/comments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ body: 'Proud of you, this is real progress.' })
+    expect(comment.status).toBe(201)
+
+    const reply = await request(app)
+      .post(`/api/forum/comments/${comment.body.comment.id}/replies`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ body: 'Thank you, that means a lot.' })
+    expect(reply.status).toBe(201)
+
+    const detail = await request(app)
+      .get(`/api/forum/posts/${postId}`)
+      .set('Authorization', `Bearer ${token}`)
+    expect(detail.status).toBe(200)
+    expect(detail.body.comments.length).toBe(1)
+    expect(detail.body.comments[0].replies.length).toBe(1)
+    expect(detail.body.post.commentCount).toBe(2)
+  })
+
+  it('hides crisis language in community posts behind a safety message', async () => {
+    const res = await request(app)
+      .post('/api/forum/posts')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ roomId: 'general', body: 'I want to end my life tonight.' })
+    expect(res.status).toBe(201)
+    expect(res.body.safety.hidden).toBe(true)
+    expect(typeof res.body.safety.message).toBe('string')
+  })
+
+  it('saves and lists bookmarked resources for the signed-in student', async () => {
+    const key = 'Anxiety Toolkit::Box breathing exercise'
+    const saved = await request(app)
+      .post('/api/resources/saved')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ resourceKey: key })
+    expect(saved.status).toBe(201)
+    expect(saved.body.saved).toContain(key)
+
+    const list = await request(app)
+      .get('/api/resources/saved')
+      .set('Authorization', `Bearer ${token}`)
+    expect(list.status).toBe(200)
+    expect(list.body.saved).toContain(key)
+  })
 })

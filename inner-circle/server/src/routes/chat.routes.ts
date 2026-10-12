@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import rateLimit from 'express-rate-limit'
 import { z } from 'zod'
 import { requireAuth } from '../middleware/auth'
 import { runPipeline } from '../ai/chatPipeline'
@@ -16,6 +17,15 @@ import {
 } from '../modules/store'
 
 const router = Router()
+
+// Stricter limit on chat generation to protect the AI provider and prevent abuse.
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: 'You are sending messages very quickly. Please take a breath and try again in a moment.' },
+})
 
 const messageSchema = z.object({
   message: z.string().trim().min(1).max(2000),
@@ -77,7 +87,7 @@ router.delete('/sessions/:id', requireAuth, (req, res) => {
  * review flag. When an LLM key is configured it is used; otherwise the
  * context-aware rule engine runs (reported as `provider`).
  */
-router.post('/', requireAuth, async (req, res, next) => {
+router.post('/', chatLimiter, requireAuth, async (req, res, next) => {
   const parsed = messageSchema.safeParse(req.body)
   if (!parsed.success) {
     res.status(400).json({ error: 'Please type a message to continue.' })

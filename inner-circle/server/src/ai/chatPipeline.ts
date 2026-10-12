@@ -647,6 +647,100 @@ const compose = (pack: ReplyPack): string => {
   return dedupe(`${pack.ack}\n\n${steps}\n\n${pack.question}`)
 }
 
+/* ------------- context-aware general replies (never a fixed template) ---- */
+
+const GENERAL_STEPS: string[][] = [
+  [
+    '**Take one slow breath** with me — in for 4, out for 6. You do not have to solve everything in this moment.',
+    '**Name what is most in your way right now.** Even one word gives us somewhere to begin.',
+  ],
+  [
+    '**Untangle one thread:** quietly note the single thought that is loudest right now.',
+    '**Shrink it:** what is one small, kind action you could take in the next ten minutes?',
+  ],
+  [
+    '**Ground yourself for a moment:** press your feet into the floor and notice three things you can see.',
+    '**Then, gently:** tell me what has been taking up the most space in your mind.',
+  ],
+  [
+    '**Give the feeling a name** — is it closer to worry, tiredness, sadness, or frustration?',
+    '**You are not carrying this alone.** We can look at one part of it together, at your pace.',
+  ],
+]
+
+const GENERAL_QUESTIONS = [
+  'What has been weighing on you the most today?',
+  'What would feel like the smallest helpful step right now?',
+  'Is there a part of this you would like to talk through first?',
+  'How long have things been feeling this way?',
+]
+
+const GENERAL_SUGGESTIONS: Suggestion[][] = [
+  [
+    { label: 'Give me a calming exercise', prompt: 'Can you guide me through a calming breathing exercise?' },
+    { label: 'Help me untangle my thoughts', prompt: 'Can you help me untangle what I am feeling?' },
+    { label: 'I feel overwhelmed', prompt: "I'm feeling really overwhelmed right now." },
+  ],
+  [
+    { label: 'Help me take one small step', prompt: 'What is one small step I could take right now?' },
+    { label: 'I could use some encouragement', prompt: 'I could really use some encouragement today.' },
+    { label: 'Help me sleep better', prompt: "I'm having trouble sleeping." },
+  ],
+  [
+    { label: 'Try 5-4-3-2-1 grounding', prompt: 'Can you guide me through the 5-4-3-2-1 grounding exercise?' },
+    { label: 'I feel lonely', prompt: 'I have been feeling really lonely.' },
+    { label: 'Help me focus', prompt: 'I cannot seem to focus on anything.' },
+  ],
+  [
+    { label: 'Give me a breathing exercise', prompt: 'Can you guide me through a breathing exercise?' },
+    { label: 'Help me make a plan', prompt: 'Can you help me make a gentle plan?' },
+    { label: 'I want to feel less overwhelmed', prompt: "I'm feeling overwhelmed and do not know where to start." },
+  ],
+]
+
+const snippet = (text: string, limit = 90): string => {
+  const clean = text.trim().replace(/\s+/g, ' ').replace(/[.?!]+$/, '')
+  return clean.length > limit ? `${clean.slice(0, limit).trim()}…` : clean
+}
+
+/**
+ * Builds a reply that reflects the student's actual words and varies the
+ * guidance so the assistant never repeats one static paragraph.
+ */
+const buildGeneralReply = (message: string, history: ChatTurn[], sentiment: SentimentResult): { reply: string; suggestions: Suggestion[] } => {
+  const lastAssistant = [...history].reverse().find(turn => turn.role === 'assistant')
+  const lastQuestion = lastAssistant?.text ?? ''
+  const asked = snippet(lastAssistant?.text ?? '', 200)
+
+  const isQuestion = message.trim().includes('?')
+  const lead = isQuestion
+    ? "That's a really fair thing to ask, and I'm glad you brought it to me."
+    : sentiment.label === 'Positive'
+      ? `It's lovely to hear a little lightness in that. Thank you for telling me.`
+      : `Thank you for trusting me with that. It sounds like “${snippet(message)}” has been sitting with you.`
+
+  const start = Math.abs(message.length + history.length) % GENERAL_STEPS.length
+  let stepIndex = start
+  // Avoid repeating the exact same guidance twice in a row.
+  for (let attempt = 0; attempt < GENERAL_STEPS.length; attempt += 1) {
+    const candidate = GENERAL_STEPS[stepIndex]
+    if (!candidate.every(step => asked.includes(snippet(step, 40)))) break
+    stepIndex = (stepIndex + 1) % GENERAL_STEPS.length
+  }
+
+  let questionIndex = (start + 1) % GENERAL_QUESTIONS.length
+  if (lastQuestion.includes(GENERAL_QUESTIONS[questionIndex].slice(0, 20))) {
+    questionIndex = (questionIndex + 1) % GENERAL_QUESTIONS.length
+  }
+
+  const steps = GENERAL_STEPS[stepIndex].join('\n')
+  const question = GENERAL_QUESTIONS[questionIndex]
+  return {
+    reply: dedupe(`${lead}\n\n${steps}\n\n${question}`),
+    suggestions: GENERAL_SUGGESTIONS[stepIndex % GENERAL_SUGGESTIONS.length].slice(0, 3),
+  }
+}
+
 export const buildReply = (params: {
   message: string
   topics: TopicResult
@@ -683,6 +777,10 @@ export const buildReply = (params: {
   if (pack.question.includes('{subject}')) {
     const fallbackSubject = subject ?? 'this subject'
     pack = { ...pack, ack: fillSubject(pack.ack, fallbackSubject), question: fillSubject(pack.question, fallbackSubject), steps: pack.steps.map(s => fillSubject(s, fallbackSubject)) }
+  }
+
+  if (pack === replyPacks.general) {
+    return buildGeneralReply(message, history, params.sentiment)
   }
 
   // Never repeat the assistant's previous reply verbatim.
