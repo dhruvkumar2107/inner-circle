@@ -51,6 +51,16 @@ export default async function handler(req: any, res: any) {
         console.error('MongoDB connection error:', error?.message?.substring(0, 200))
       }
     }
+    // Ride out a flaky first connect (cold DNS/TLS) with one short retry
+    // before asking the client to try again.
+    if (mongoose.connection.readyState !== 1) {
+      await new Promise(resolve => setTimeout(resolve, 750))
+      try {
+        await connectMongo()
+      } catch (error: any) {
+        console.error('MongoDB retry error:', error?.message?.substring(0, 200))
+      }
+    }
     // Never serve from the in-memory fallback when a real database is
     // configured: doing so silently loses registrations and returns false
     // "invalid credentials" while the database is still warming up.
