@@ -51,6 +51,7 @@ export default function Onboarding() {
       kicker: "WHAT'S ON YOUR MIND",
       title: 'Anything you would like support with?',
       body: 'Choose as many as feel true today. This simply helps us shape your recommendations — you can change it any time.',
+      icon: Sparkles,
       content: (
         <div className="chip-grid">
           {concerns.map(item => (
@@ -65,6 +66,7 @@ export default function Onboarding() {
       kicker: 'YOU SET THE PACE',
       title: 'You are in charge here.',
       body: 'Whenever things feel heavy you can use the “I need help now” button, talk to the companion, or reach a real person. We will never push you.',
+      icon: HeartHandshake,
       content: (
         <div className="onboard-final">
           <button className="btn btn-soft" onClick={requestHelp}><HeartHandshake size={16} /> I'd like to see real support options</button>
@@ -75,7 +77,7 @@ export default function Onboarding() {
   ]
 
   const current = steps[step]
-  const Icon = current.icon
+  const Icon = current.icon ?? Leaf
   const last = step === steps.length - 1
 
   return (
