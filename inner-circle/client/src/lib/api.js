@@ -28,9 +28,12 @@ export const api = async (path, options = {}) => {
   try {
     response = await doFetch()
     // 503 means a serverless cold start wasn't ready yet; the request was never
-    // processed, so retrying once is safe even for non-idempotent calls.
-    if (response.status === 503) {
-      await new Promise(resolve => setTimeout(resolve, 800))
+    // processed, so retrying is safe even for non-idempotent calls. Back off a
+    // few times to ride out a cold Mongo connection.
+    const backoff = [700, 1500, 3000]
+    for (const delay of backoff) {
+      if (response.status !== 503) break
+      await new Promise(resolve => setTimeout(resolve, delay))
       response = await doFetch()
     }
   } catch {

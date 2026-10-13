@@ -34,6 +34,14 @@ const connectMongo = async (): Promise<void> => {
   }
 }
 
+// Kick off the connection as soon as the module is loaded (i.e. during the
+// serverless cold start) so the first real request usually finds it ready.
+if (process.env.MONGO_URI) {
+  connectMongo().catch(error => {
+    console.error('MongoDB eager connection error:', (error as Error)?.message?.substring(0, 200))
+  })
+}
+
 export default async function handler(req: any, res: any) {
   if (process.env.MONGO_URI) {
     if (mongoose.connection.readyState !== 1) {
