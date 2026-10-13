@@ -120,17 +120,28 @@ const ensureUser = async (
   const existing = await findUserByEmail(account.email)
   if (existing) return existing
   const [firstName, ...rest] = account.name.split(' ')
-  return insertUser({
-    firstName,
-    lastName: rest.join(' ') || 'Demo',
-    email: account.email,
-    passwordHash,
-    role: account.role,
-    alias: account.alias,
-    college: 'Demo Institute of Technology',
-    department: index % 2 === 0 ? 'Computer Science' : 'Psychology',
-    year: `${(index % 4) + 1}`,
-  })
+  try {
+    return await insertUser({
+      firstName,
+      lastName: rest.join(' ') || 'Demo',
+      email: account.email,
+      passwordHash,
+      role: account.role,
+      alias: account.alias,
+      college: 'Demo Institute of Technology',
+      department: index % 2 === 0 ? 'Computer Science' : 'Psychology',
+      year: `${(index % 4) + 1}`,
+    })
+  } catch (error) {
+    // Two cold serverless instances can seed concurrently; the loser hits the
+    // unique index. Re-read the winning record instead of aborting the seed.
+    const duplicate = typeof error === 'object' && error !== null && 'code' in error && (error as { code?: number }).code === 11000
+    if (duplicate) {
+      const raced = await findUserByEmail(account.email)
+      if (raced) return raced
+    }
+    throw error
+  }
 }
 
 export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }> => {

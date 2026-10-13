@@ -715,3 +715,15 @@ input, select, textarea { font-family: inherit; font-size: 0.95rem; }
   .hero-card-b { right: 0; }
   .bubble { max-width: 88%; }
 }
+
+/* Public informational pages (How it works, Privacy) when signed out */
+.info-shell { min-height: 100vh; background: var(--cream); }
+.info-shell-nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--line); background: var(--card); position: sticky; top: 0; z-index: 20; }
+.info-shell-brand { text-decoration: none; }
+.info-shell-brand:hover { text-decoration: none; }
+.info-shell-actions { display: flex; align-items: center; gap: 0.6rem; }
+.info-shell-content { max-width: 1080px; margin: 0 auto; padding: 1rem 0 3rem; }
+@media (max-width: 620px) {
+  .info-shell-nav { flex-wrap: wrap; }
+  .info-shell-actions { margin-left: auto; }
+}

@@ -15,17 +15,24 @@ export class ApiError extends Error {
 
 export const api = async (path, options = {}) => {
   const token = localStorage.getItem(tokenKey)
+  const doFetch = () => fetch(`${apiBase}/api${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  })
   let response
   try {
-    response = await fetch(`${apiBase}/api${path}`, {
-      ...options,
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
-      },
-    })
+    response = await doFetch()
+    // 503 means a serverless cold start wasn't ready yet; the request was never
+    // processed, so retrying once is safe even for non-idempotent calls.
+    if (response.status === 503) {
+      await new Promise(resolve => setTimeout(resolve, 800))
+      response = await doFetch()
+    }
   } catch {
     throw new ApiError('We could not reach Inner Circle. Please check your connection and try again.', 0)
   }

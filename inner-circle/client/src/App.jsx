@@ -1,6 +1,7 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { tokenKey } from './lib/api'
 import { AppShell } from './components/Shell'
+import { Brand, LanguagePicker } from './components/common'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
 import Onboarding from './pages/Onboarding'
@@ -22,6 +23,23 @@ const RequireAuth = ({ children }) => {
   return children
 }
 
+const InfoShell = () => {
+  if (localStorage.getItem(tokenKey)) return <AppShell />
+  return (
+    <div className="info-shell">
+      <header className="info-shell-nav">
+        <Link to="/" className="info-shell-brand"><Brand /></Link>
+        <div className="info-shell-actions">
+          <LanguagePicker />
+          <Link className="btn btn-ghost" to="/login">Sign in</Link>
+          <Link className="btn btn-primary" to="/register">Create account</Link>
+        </div>
+      </header>
+      <main className="info-shell-content"><Outlet /></main>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <Routes>
@@ -30,6 +48,11 @@ export default function App() {
       <Route path="/register" element={<Auth mode="register" />} />
       <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
 
+      <Route element={<InfoShell />}>
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/privacy" element={<Privacy />} />
+      </Route>
+
       <Route element={<RequireAuth><AppShell /></RequireAuth>}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/chat" element={<Chat />} />
@@ -37,8 +60,6 @@ export default function App() {
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/forum" element={<Forum />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/privacy" element={<Privacy />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/playground" element={<Playground />} />
         <Route path="/professional" element={<Professional />} />
