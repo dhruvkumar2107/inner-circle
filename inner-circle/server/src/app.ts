@@ -15,6 +15,8 @@ import proRoutes from './routes/pro.routes'
 import adminRoutes from './routes/admin.routes'
 import safetyRoutes from './routes/safety.routes'
 import { ensureSeeded } from './seed/demo'
+import { hydrateDomainStore, persistDomainDiff } from './modules/domainPersistence'
+import { exportDomainState, type DomainState } from './modules/store'
 
 const app = express()
 const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173,http://localhost:5174,http://localhost:3000')
@@ -57,13 +59,66 @@ app.use('/api/auth/', rateLimit({
   legacyHeaders: false,
 }))
 
-// Seed demo personas on first request (idempotent).
-app.use(async (_req, _res, next) => {
-  try {
-    await ensureSeeded()
-  } catch {
-    /* the seed is best-effort; the API still serves an empty demo */
+// Serialize requests per instance so the hydrate -> handle -> persist cycle is
+// atomic. The domain store is a shared in-memory working set, so letting two
+// requests interleave would let one request's hydration wipe another's writes.
+let domainLock: Promise<void> = Promise.resolve()
+const acquireDomainLock = (): Promise<() => void> => {
+  let release!: () => void
+  const next = new Promise<void>(resolve => { release = resolve })
+  const wait = domainLock
+  domainLock = next
+  return wait.then(() => release)
+}
+
+// Load the persisted domain store, seed demo data on first boot, then persist
+// whatever changed before the response is sent. Requests are serialized so the
+// shared in-memory store stays consistent within a single instance.
+app.use(async (req, res, next) => {
+  if (req.path === '/api/health') {
+    next()
+    return
   }
+
+  const release = await acquireDomainLock()
+  let released = false
+  const finish = () => {
+    if (!released) {
+      released = true
+      release()
+    }
+  }
+
+  res.on('close', finish)
+
+  let baseline: DomainState
+  try {
+    await hydrateDomainStore()
+    baseline = exportDomainState()
+    await ensureSeeded()
+  } catch (error) {
+    finish()
+    next(error)
+    return
+  }
+
+  const originalJson = res.json.bind(res)
+  let started = false
+  res.json = ((body?: unknown) => {
+    if (started) return res
+    started = true
+    void (async () => {
+      try {
+        await persistDomainDiff(baseline)
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'test') console.error('Domain persistence failed:', error instanceof Error ? error.message : error)
+      }
+      originalJson(body)
+      finish()
+    })()
+    return res
+  }) as express.Response['json']
+
   next()
 })
 

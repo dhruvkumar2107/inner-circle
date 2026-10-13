@@ -11,6 +11,7 @@
 import bcrypt from 'bcryptjs'
 import { findUserByEmail, insertUser, isAliasTaken, listUsers } from '../modules/auth/store'
 import { generateUniqueAlias } from '../modules/auth/alias'
+import type { UserRecord } from '../modules/users/userModel'
 import { inferRisk } from '../fuzzy/engine'
 import {
   addAppointment,
@@ -21,7 +22,6 @@ import {
   addProfessional,
   allInferences,
   computeTrend,
-  createId,
   listProfessionals,
 } from '../modules/store'
 
@@ -144,6 +144,30 @@ const ensureUser = async (
   }
 }
 
+/**
+ * Create a seed user idempotently. Tolerates two cold instances seeding at the
+ * same time: a duplicate email resolves to the winning record, and a duplicate
+ * alias retries with a freshly generated one.
+ */
+const createSeedUser = async (fields: Parameters<typeof insertUser>[0]): Promise<UserRecord> => {
+  const existing = await findUserByEmail(fields.email)
+  if (existing) return existing
+  let candidate = fields
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    try {
+      return await insertUser(candidate)
+    } catch (error) {
+      const duplicate =
+        typeof error === 'object' && error !== null && 'code' in error && (error as { code?: number }).code === 11000
+      if (!duplicate) throw error
+      const raced = await findUserByEmail(fields.email)
+      if (raced) return raced
+      candidate = { ...candidate, alias: await generateUniqueAlias(isAliasTaken) }
+    }
+  }
+  throw new Error(`Could not create seed user ${fields.email}`)
+}
+
 export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }> => {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12)
   const byEmail = new Map<string, string>()
@@ -159,7 +183,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
   // Professional directory (seeded once per process)
   if (listProfessionals().length === 0) {
     addProfessional({
-      id: createId(),
+      id: 'prof-sarah',
       userId: userId('sarah@demo.innercircle.test'),
       name: 'Dr. Sarah Johnson',
       title: 'Clinical Psychologist',
@@ -169,7 +193,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
       availability: ['10:00 AM', '11:30 AM', '02:00 PM', '04:30 PM'],
     })
     addProfessional({
-      id: createId(),
+      id: 'prof-michael',
       userId: userId('michael@demo.innercircle.test'),
       name: 'Dr. Michael Chen',
       title: 'Counseling Psychologist',
@@ -179,7 +203,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
       availability: ['09:30 AM', '01:00 PM', '03:00 PM', '05:00 PM'],
     })
     addProfessional({
-      id: createId(),
+      id: 'prof-ira',
       userId: userId('intern@demo.innercircle.test'),
       name: 'Dr. Ira Mehta',
       title: 'Psychiatry Intern (supervised intervention — subject to institutional approval)',
@@ -196,6 +220,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
   if (allInferences().length === 0) {
     for (const persona of personaBackData) {
       const id = userId(persona.email)
+      const personaKey = persona.email.split('@')[0]
       for (let step = 0; step < persona.phq9.length; step += 1) {
         const phq9 = persona.phq9[step]
         const gad7 = persona.gad7[step]
@@ -205,10 +230,12 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
         const takenAt = daysAgo(offset + 1)
 
         addAssessment({
+          id: `seed-${personaKey}-${step}-phq9`,
           userId: id, type: 'PHQ9', answers: persona.baseAnswers.phq9, total: phq9,
           severity: severityFor(phq9, true), item9Flag: persona.baseAnswers.phq9[8] > 0, takenAt,
         })
         addAssessment({
+          id: `seed-${personaKey}-${step}-gad7`,
           userId: id, type: 'GAD7', answers: persona.baseAnswers.gad7, total: gad7,
           severity: severityFor(gad7, false), item9Flag: false, takenAt,
         })
@@ -216,6 +243,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
         const result = inferRisk({ phq9, gad7, sentiment, stress, functional: persona.functional, safetyOverride: false })
         const scores = allInferences().filter(item => item.userId === id).map(item => item.riskScore)
         addInference({
+          id: `seed-${personaKey}-${step}-inference`,
           userId: id,
           inputs: { phq9, gad7, sentiment, stress, functional: persona.functional },
           memberships: result.memberships,
@@ -231,6 +259,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
         })
 
         addCheckin({
+          id: `seed-${personaKey}-${step}-checkin`,
           userId: id, mood: moodFor(stress), stress, functionalImpact: persona.functional,
           note: `Weekly check-in (${step + 1})`, sentiment, takenAt: daysAgo(offset + 2),
         })
@@ -241,6 +270,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
     const crisisId = userId('crisis@demo.innercircle.test')
     const crisisResult = inferRisk({ phq9: 23, gad7: 18, sentiment: -0.8, stress: 10, functional: 9, safetyOverride: true })
     addInference({
+      id: 'seed-crisis-inference',
       userId: crisisId,
       inputs: { phq9: 23, gad7: 18, sentiment: -0.8, stress: 10, functional: 9 },
       memberships: crisisResult.memberships,
@@ -264,33 +294,34 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
     for (const group of analyticsBands) {
       for (let index = 0; index < 6; index += 1) {
         const email = `analytics-${group.band.toLowerCase()}-${index}@demo.innercircle.test`
-        let created = await findUserByEmail(email)
-        if (!created) {
-          created = await insertUser({
-            firstName: group.band,
-            lastName: `Student ${index + 1}`,
-            email,
-            passwordHash,
-            role: 'student',
-            alias: await generateUniqueAlias(isAliasTaken),
-            college: 'Demo Institute of Technology',
-          })
-        }
+        const created = await createSeedUser({
+          firstName: group.band,
+          lastName: `Student ${index + 1}`,
+          email,
+          passwordHash,
+          role: 'student',
+          alias: await generateUniqueAlias(isAliasTaken),
+          college: 'Demo Institute of Technology',
+        })
         const phq9 = group.phq9[index % group.phq9.length]
         const gad7 = group.gad7[index % group.gad7.length]
         const stress = group.stress[index % group.stress.length]
         const sentiment = group.sentiment[index % group.sentiment.length]
         const takenAt = daysAgo(2 + index)
+        const analyticsKey = `analytics-${group.band.toLowerCase()}-${index}`
         addAssessment({
+          id: `seed-${analyticsKey}-phq9`,
           userId: created.id, type: 'PHQ9', answers: Array(9).fill(Math.min(3, Math.round(phq9 / 9))),
           total: phq9, severity: severityFor(phq9, true), item9Flag: false, takenAt,
         })
         addAssessment({
+          id: `seed-${analyticsKey}-gad7`,
           userId: created.id, type: 'GAD7', answers: Array(7).fill(Math.min(3, Math.round(gad7 / 7))),
           total: gad7, severity: severityFor(gad7, false), item9Flag: false, takenAt,
         })
         const result = inferRisk({ phq9, gad7, sentiment, stress, functional: group.functional, safetyOverride: false })
         addInference({
+          id: `seed-${analyticsKey}-inference`,
           userId: created.id,
           inputs: { phq9, gad7, sentiment, stress, functional: group.functional },
           memberships: result.memberships,
@@ -312,18 +343,21 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
     const highId = userId('high@demo.innercircle.test')
     const [sarah, michael] = professionals
     addAppointment({
+      id: 'seed-appt-moderate-sarah',
       userId: moderateId, professionalId: sarah.id, professionalName: sarah.name,
       date: daysAhead(3), time: '11:30 AM', durationMin: 60, type: 'Individual',
       mode: 'Online', location: 'Online', status: 'confirmed', priority: 'normal',
       notes: 'Would like to talk about exam stress.', history: [{ action: 'booked', at: daysAgo(2) }],
     })
     addAppointment({
+      id: 'seed-appt-moderate-michael',
       userId: moderateId, professionalId: michael.id, professionalName: michael.name,
       date: daysAhead(-10), time: '01:00 PM', durationMin: 45, type: 'Follow-up',
       mode: 'In-person', location: 'Office', status: 'completed', priority: 'normal',
       history: [{ action: 'completed', at: daysAgo(10) }],
     })
     addAppointment({
+      id: 'seed-appt-high-sarah',
       userId: highId, professionalId: sarah.id, professionalName: sarah.name,
       date: daysAhead(1), time: '04:30 PM', durationMin: 60, type: 'Emergency-priority',
       mode: 'Online', location: 'Online', status: 'confirmed', priority: 'emergency',
@@ -344,6 +378,7 @@ export const seedDemoData = async (): Promise<{ seeded: boolean; users: number }
     for (let i = 0; i < 30; i += 1) {
       const seed = roomSeed[i % roomSeed.length]
       addForumPost({
+        id: `seed-post-${i}`,
         roomId: seed.roomId, room: seed.room, authorAlias: seed.alias, authorId: 'seed-hidden-author',
         body: seed.body, reactions: { support: (i % 5) + 2, relate: (i % 4) + 1, grow: (i % 3) },
         reports: 0, status: 'visible', flaggedCrisis: false, createdAt: daysAgo(seed.days + i),

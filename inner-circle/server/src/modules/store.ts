@@ -194,8 +194,8 @@ export const createId = (): string => randomUUID()
 
 /* ----------------------------- assessments ------------------------------ */
 
-export const addAssessment = (record: Omit<AssessmentRecord, 'id'>): AssessmentRecord => {
-  const full: AssessmentRecord = { ...record, id: createId() }
+export const addAssessment = (record: Omit<AssessmentRecord, 'id'> & { id?: string }): AssessmentRecord => {
+  const full: AssessmentRecord = { ...record, id: record.id ?? createId() }
   assessments.push(full)
   return full
 }
@@ -207,8 +207,8 @@ export const allAssessments = (): AssessmentRecord[] => assessments
 
 /* -------------------------------- check-ins ----------------------------- */
 
-export const addCheckin = (record: Omit<CheckinRecord, 'id'>): CheckinRecord => {
-  const full: CheckinRecord = { ...record, id: createId() }
+export const addCheckin = (record: Omit<CheckinRecord, 'id'> & { id?: string }): CheckinRecord => {
+  const full: CheckinRecord = { ...record, id: record.id ?? createId() }
   checkins.push(full)
   return full
 }
@@ -220,8 +220,8 @@ export const allCheckins = (): CheckinRecord[] => checkins
 
 /* ---------------------------- risk inferences --------------------------- */
 
-export const addInference = (record: Omit<RiskInferenceRecord, 'id'>): RiskInferenceRecord => {
-  const full: RiskInferenceRecord = { ...record, id: createId() }
+export const addInference = (record: Omit<RiskInferenceRecord, 'id'> & { id?: string }): RiskInferenceRecord => {
+  const full: RiskInferenceRecord = { ...record, id: record.id ?? createId() }
   inferences.push(full)
   return full
 }
@@ -236,8 +236,8 @@ export const allInferences = (): RiskInferenceRecord[] => inferences
 
 /* ------------------------------ appointments ---------------------------- */
 
-export const addAppointment = (record: Omit<AppointmentRecord, 'id'>): AppointmentRecord => {
-  const full: AppointmentRecord = { ...record, id: createId() }
+export const addAppointment = (record: Omit<AppointmentRecord, 'id'> & { id?: string }): AppointmentRecord => {
+  const full: AppointmentRecord = { ...record, id: record.id ?? createId() }
   appointments.push(full)
   return full
 }
@@ -255,8 +255,8 @@ export const findAppointmentForSlot = (professionalId: string, date: string, tim
 
 /* --------------------------------- forum -------------------------------- */
 
-export const addForumPost = (record: Omit<ForumPostRecord, 'id'>): ForumPostRecord => {
-  const full: ForumPostRecord = { ...record, id: createId() }
+export const addForumPost = (record: Omit<ForumPostRecord, 'id'> & { id?: string }): ForumPostRecord => {
+  const full: ForumPostRecord = { ...record, id: record.id ?? createId() }
   forumPosts.push(full)
   return full
 }
@@ -470,6 +470,57 @@ export const computeTrend = (scores: number[]): 'Improving' | 'Stable' | 'Worsen
   if (slope <= -2) return 'Improving'
   if (slope >= 2) return 'Worsening'
   return 'Stable'
+}
+
+/* --------------------------- persistence bridge ------------------------- */
+
+/**
+ * Metadata used by the persistence layer to load and store the whole domain
+ * store from MongoDB. Records are addressed by a stable key (a real `id`, or a
+ * synthesized composite key for records without one such as saved resources).
+ */
+export interface DomainCollection {
+  name: string
+  get: () => Array<Record<string, unknown>>
+  key: (record: Record<string, unknown>) => string
+}
+
+export type DomainState = Record<string, Array<Record<string, unknown>>>
+
+export const domainCollections: DomainCollection[] = [
+  { name: 'assessments', get: () => assessments as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'checkins', get: () => checkins as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'inferences', get: () => inferences as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'appointments', get: () => appointments as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'forumPosts', get: () => forumPosts as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'forumComments', get: () => forumComments as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'flags', get: () => flags as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'auditLogs', get: () => auditLogs as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'professionals', get: () => professionalProfiles as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'chatSessions', get: () => chatSessions as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'chatMessages', get: () => chatMessages as unknown as Array<Record<string, unknown>>, key: record => String(record.id) },
+  { name: 'savedResources', get: () => savedResources as unknown as Array<Record<string, unknown>>, key: record => `${record.userId}::${record.resourceKey}` },
+]
+
+/** Deep copy of every domain collection (dates preserved via structuredClone). */
+export const exportDomainState = (): DomainState => {
+  const state: DomainState = {}
+  for (const collection of domainCollections) {
+    state[collection.name] = structuredClone(collection.get())
+  }
+  return state
+}
+
+/** Replace the in-memory collections in place with a persisted snapshot. */
+export const importDomainState = (state: DomainState): void => {
+  for (const collection of domainCollections) {
+    const target = collection.get()
+    target.length = 0
+    const incoming = state[collection.name]
+    if (Array.isArray(incoming)) {
+      for (const record of incoming) target.push(record)
+    }
+  }
 }
 
 /* ------------------------------- reset (test) --------------------------- */
