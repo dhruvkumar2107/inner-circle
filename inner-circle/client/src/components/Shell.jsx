@@ -128,10 +128,10 @@ export function AppShell() {
       </div>
 
       <div className="toast-wrap" aria-live="polite">
-        {toasts.map((t) => (
-          <div key={t.id} className={`toast ${t.tone === 'warn' ? 'toast-warn' : ''}`}>
-            <span>{t.message}</span>
-            <button onClick={() => dismissToast(t.id)} aria-label={t('nav.toastDismiss')}><X size={14} /></button>
+        {toasts.map((item) => (
+          <div key={item.id} className={`toast ${item.tone === 'warn' ? 'toast-warn' : ''}`}>
+            <span>{item.message}</span>
+            <button onClick={() => dismissToast(item.id)} aria-label={t('nav.toastDismiss')}><X size={14} /></button>
           </div>
         ))}
       </div>

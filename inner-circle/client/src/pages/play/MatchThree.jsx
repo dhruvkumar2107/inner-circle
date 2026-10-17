@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { RotateCcw } from 'lucide-react'
+import { ArrowLeft, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n'
 
@@ -76,7 +76,7 @@ const adjacent = (a, b) => {
   return Math.abs(ar - br) + Math.abs(ac - bc) === 1
 }
 
-export default function MatchThree({ best = 0, onBest }) {
+export default function MatchThree({ best = 0, onBest, onBack }) {
   const { toast } = useApp()
   const t = useT()
   const [board, setBoard] = useState(makeBoard)
@@ -170,6 +170,11 @@ export default function MatchThree({ best = 0, onBest }) {
         <button type="button" className="btn btn-outline btn-sm" style={{ marginLeft: 'auto' }} onClick={newGame}>
           <RotateCcw size={14} /> {t('play.match.newGame')}
         </button>
+        {onBack && (
+          <button type="button" className="btn btn-soft btn-sm" onClick={onBack}>
+            <ArrowLeft size={14} /> {t('play.buttons.backToGames')}
+          </button>
+        )}
       </div>
       <div className="match-grid" role="group" aria-label={t('play.match.boardLabel')}>
         {board.map((v, i) => (

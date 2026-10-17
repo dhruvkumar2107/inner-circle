@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Play, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Play, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n'
 
@@ -34,7 +34,7 @@ function makeObstacle(x) {
   }
 }
 
-export default function EndlessRunner({ best = 0, onBest }) {
+export default function EndlessRunner({ best = 0, onBest, onBack }) {
   const { toast } = useApp()
   const t = useT()
   const canvasRef = useRef(null)
@@ -278,9 +278,16 @@ export default function EndlessRunner({ best = 0, onBest }) {
               <p className="tiny muted" style={{ margin: '0 0 0.9rem' }}>
                 {t('play.runner.overHint')}
               </p>
-              <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <RotateCcw size={14} /> {t('play.runner.restart')}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button type="button" className="btn btn-primary btn-sm" onClick={start}>
+                  <RotateCcw size={14} /> {t('play.runner.restart')}
+                </button>
+                {onBack && (
+                  <button type="button" className="btn btn-soft btn-sm" onClick={onBack}>
+                    <ArrowLeft size={14} /> {t('play.buttons.backToGames')}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Play, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Play, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n'
 
@@ -7,7 +7,7 @@ const ROUND = 20
 const TARGET_LIFE = 1600
 const TONES = ['tone-sage', 'tone-mint', 'tone-amber', 'tone-rose', 'tone-sky']
 
-export default function FocusReaction({ best = 0, onBest }) {
+export default function FocusReaction({ best = 0, onBest, onBack }) {
   const { toast } = useApp()
   const t = useT()
   const [phase, setPhase] = useState('ready')
@@ -140,9 +140,16 @@ export default function FocusReaction({ best = 0, onBest }) {
                   ? t('play.focus.overNewBest', { score })
                   : t('play.focus.overBest', { score, best: bestScore })}
               </p>
-              <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <RotateCcw size={14} /> {t('play.focus.playAgain')}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button type="button" className="btn btn-primary btn-sm" onClick={start}>
+                  <RotateCcw size={14} /> {t('play.focus.playAgain')}
+                </button>
+                {onBack && (
+                  <button type="button" className="btn btn-soft btn-sm" onClick={onBack}>
+                    <ArrowLeft size={14} /> {t('play.buttons.backToGames')}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

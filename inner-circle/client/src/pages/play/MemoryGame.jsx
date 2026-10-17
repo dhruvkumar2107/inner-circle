@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { RotateCcw } from 'lucide-react'
+import { ArrowLeft, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n'
 
@@ -14,7 +14,7 @@ function makeDeck() {
   return pairs.map((emoji, i) => ({ id: i, emoji }))
 }
 
-export default function MemoryGame({ best = null, onBest }) {
+export default function MemoryGame({ best = null, onBest, onBack }) {
   const { toast } = useApp()
   const t = useT()
   const [deck, setDeck] = useState(makeDeck)
@@ -112,9 +112,19 @@ export default function MemoryGame({ best = null, onBest }) {
       {won && (
         <div className="game-over" style={{ marginTop: '0.9rem' }}>
           <b>{t('play.memory.winTitle')}</b>
-          <p className="small muted" style={{ margin: '0.3rem 0 0' }}>
+          <p className="small muted" style={{ margin: '0.3rem 0 0.7rem' }}>
             {t('play.memory.winBody', { moves })}
           </p>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={newGame}>
+              <RotateCcw size={14} /> {t('play.memory.newGame')}
+            </button>
+            {onBack && (
+              <button type="button" className="btn btn-soft btn-sm" onClick={onBack}>
+                <ArrowLeft size={14} /> {t('play.buttons.backToGames')}
+              </button>
+            )}
+          </div>
         </div>
       )}
       {!won && (

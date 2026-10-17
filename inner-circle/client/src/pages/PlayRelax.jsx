@@ -129,24 +129,28 @@ export default function PlayRelax() {
             <EndlessRunner
               best={bests.runner}
               onBest={(v) => recordBest('runner', v, (a, b) => a > b)}
+              onBack={() => setOpen(null)}
             />
           )}
           {open === 'match' && (
             <MatchThree
               best={bests.match}
               onBest={(v) => recordBest('match', v, (a, b) => a > b)}
+              onBack={() => setOpen(null)}
             />
           )}
           {open === 'memory' && (
             <MemoryGame
               best={bests.memory}
               onBest={(v) => recordBest('memory', v, (a, b) => a < b)}
+              onBack={() => setOpen(null)}
             />
           )}
           {open === 'focus' && (
             <FocusReaction
               best={bests.focus}
               onBest={(v) => recordBest('focus', v, (a, b) => a > b)}
+              onBack={() => setOpen(null)}
             />
           )}
           {open === 'colour' && <ColouringCanvas />}

@@ -20,7 +20,8 @@
     "relax": "RELAX"
   },
   "buttons": {
-    "open": "Open"
+    "open": "Open",
+    "backToGames": "Back to activities"
   },
   "best": {
     "moves": "Best: {{value}} moves",
