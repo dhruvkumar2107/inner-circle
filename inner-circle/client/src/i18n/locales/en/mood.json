@@ -1,0 +1,57 @@
+{
+  "kicker": "REFLECTION",
+  "title": "My Mood Journey",
+  "sub": "A gentle look back at how you've been. Yours to read, yours to delete.",
+  "logToday": "Log today's mood",
+  "week": {
+    "title": "Your last seven days",
+    "sub": "One square for each day. A dash means no check-in — and that's completely fine.",
+    "legendLabel": "Mood legend",
+    "noCheckin": "no check-in",
+    "hint": "Nothing checked in this week yet. The squares fill in whenever you feel like it.",
+    "trendCaption": "A rough shape of your week — not a score, and not a diagnosis."
+  },
+  "history": {
+    "title": "Mood history",
+    "sub": "Newest first. A mood is a moment, not a verdict.",
+    "emptyTitle": "No check-ins yet",
+    "emptyBody": "Your story starts with one small moment, whenever you're ready."
+  },
+  "reflections": {
+    "title": "Reflections",
+    "sub": "Optional. A few words are enough, whenever you feel like writing.",
+    "label": "Your reflection",
+    "placeholder": "What's sitting with you today?",
+    "save": "Save reflection",
+    "savedToast": "Reflection saved — just for you.",
+    "emptyTitle": "No reflections yet.",
+    "emptyBody": "One line is enough, whenever you feel like it."
+  },
+  "wins": {
+    "title": "Tiny Wins",
+    "sub": "Something you did that you're okay with. No one's counting — it's just nice to see them.",
+    "groupLabel": "Example tiny wins",
+    "prompts": {
+      "assignment": "I completed an assignment",
+      "walk": "I went for a walk",
+      "friend": "I spoke to a friend",
+      "break": "I took a break when I needed one"
+    },
+    "addLabel": "Add a tiny win",
+    "placeholder": "I took a break when I needed one.",
+    "add": "Add win",
+    "addedToast": "Tiny win noted.",
+    "emptyTitle": "No tiny wins yet.",
+    "emptyBody": "Big or small — making tea counts. Add one whenever something goes okay."
+  },
+  "delete": {
+    "aria": "Delete {{label}}",
+    "ask": "Delete?",
+    "keep": "Keep"
+  },
+  "entryKind": {
+    "reflection": "reflection",
+    "tinyWin": "tiny win"
+  },
+  "privacyNote": "Your mood history helps you reflect. It is not used to label you or to decide whether you have a condition."
+}

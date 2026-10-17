@@ -2,19 +2,25 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Mic, Send, Sparkles, Trash2, Volume2, VolumeX } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { useI18n } from '../i18n'
 import { Badge, Mascot, Note } from '../components/ui'
 import { generateReply, QUICK_PROMPTS } from '../lib/chatEngine'
-import { analyze, emotionLabel } from '../lib/sentiment'
-import { speechSupport, startListening, speak, stopSpeaking, STT_UNAVAILABLE_NOTE } from '../lib/voice'
+import { analyze, emotionLabelKey, sentimentLabelKey, topicKey } from '../lib/sentiment'
+import { hasRemoteChat, requestChat } from '../lib/remote'
+import {
+  speechSupport, startListening, speak, stopSpeaking,
+  STT_UNAVAILABLE_KEY, VOICE_ERROR_KEYS, SPEECH_LOCALES,
+} from '../lib/voice'
 import { timeOf } from '../lib/storage'
 
-const TONE_WORD = (score) => (score > 0.12 ? 'positive' : score < -0.12 ? 'negative' : 'neutral')
+const toneLabel = (score) => (score > 0.12 ? 'Positive' : score < -0.12 ? 'Negative' : 'Neutral')
 
 export default function Companion() {
   const {
     messages, pushMessage, clearMessages, toast, settings, updateSettings,
     openSafety, recentSentiment,
   } = useApp()
+  const { lang, t } = useI18n()
 
   const [draft, setDraft] = useState('')
   const [typing, setTyping] = useState(false)
@@ -28,6 +34,8 @@ export default function Companion() {
 
   const last = messages[messages.length - 1] || null
   const lastUser = [...messages].reverse().find((m) => m.role === 'user') || null
+  const lastAi = [...messages].reverse().find((m) => m.role === 'ai') || null
+  const liveAi = Boolean(lastAi && lastAi.source === 'live')
 
   useEffect(() => () => {
     if (replyTimer.current) clearTimeout(replyTimer.current)
@@ -40,36 +48,78 @@ export default function Companion() {
     if (el) el.scrollTop = el.scrollHeight
   }, [messages.length, typing])
 
-  const send = (raw) => {
-    const text = String(raw || '').trim()
-    if (!text || typing) return
+  /** Turns a stored reply's vars into interpolation values (topic keys resolved). */
+  const resolveVars = (vars) => {
+    if (!vars) return undefined
+    const next = { ...vars }
+    if (next.topicKey) {
+      next.topic = t(next.topicKey).toLowerCase()
+      delete next.topicKey
+    }
+    return next
+  }
 
-    const result = analyze(text)
+  // Local, scripted replies carry a translation key; live remote replies carry
+  // plain text. Either way the bubble renders a string.
+  const renderReply = (message) =>
+    message.replyKey ? t(message.replyKey, resolveVars(message.replyVars)) : message.text || ''
+
+  const send = async (raw, display) => {
+    const seed = String(raw || '').trim()
+    if (!seed || typing) return
+
+    // SAFETY + PRIVACY (always first, before any network call): the deterministic
+    // local crisis check. If crisis language is present we open the safety
+    // pathway and NEVER transmit the message to any remote endpoint — crisis
+    // text is never sent anywhere, and no remote call is made at all.
+    const result = analyze(seed)
+    const crisis = result.crisis.isCrisis
+
     pushMessage({
       role: 'user',
-      text,
+      text: display || seed,
+      probe: seed,
       sentiment: result.sentiment.score,
       sentimentLabel: result.sentiment.label,
       emotion: result.emotion.primary,
       topic: result.topics.primary,
-      crisis: result.crisis.isCrisis,
+      crisis,
     })
     setDraft('')
 
-    const reply = generateReply({ text, history: messages })
+    const history = messages.map((m) => ({ role: m.role, text: m.probe || m.text }))
+    const reply = generateReply({ text: seed, history })
 
     if (reply.crisis) {
-      pushMessage({ role: 'ai', text: reply.text, prompts: reply.prompts, suggestion: reply.suggestion, crisis: true, intent: 'crisis' })
+      pushMessage({ role: 'ai', replyKey: reply.key, replyVars: reply.vars, prompts: reply.prompts, suggestion: reply.suggestion, crisis: true, intent: 'crisis' })
       openSafety('companion')
       return
     }
 
     setTyping(true)
     if (replyTimer.current) clearTimeout(replyTimer.current)
+
+    // Optional remote model. Only reached when VITE_CHAT_ENDPOINT is configured
+    // and the message is not a crisis. On any failure we fall back to the local
+    // scripted reply and warn the student.
+    if (!crisis && hasRemoteChat()) {
+      try {
+        const replyText = await requestChat({ text: seed, history, lang })
+        replyTimer.current = setTimeout(() => {
+          pushMessage({ role: 'ai', text: replyText, source: 'live', intent: reply.intent })
+          setTyping(false)
+          if (settings.tts) speak(replyText)
+        }, 750)
+        return
+      } catch {
+        toast(t('companion.remoteFailed'), 'warn')
+      }
+    }
+
     replyTimer.current = setTimeout(() => {
-      pushMessage({ role: 'ai', text: reply.text, prompts: reply.prompts, suggestion: reply.suggestion, intent: reply.intent })
+      pushMessage({ role: 'ai', replyKey: reply.key, replyVars: reply.vars, prompts: reply.prompts, suggestion: reply.suggestion, intent: reply.intent })
       setTyping(false)
-      if (settings.tts) speak(reply.text)
+      if (settings.tts) speak(t(reply.key, resolveVars(reply.vars)))
     }, 750)
   }
 
@@ -80,25 +130,26 @@ export default function Companion() {
       return
     }
     if (!support.stt) {
-      toast(STT_UNAVAILABLE_NOTE, 'warn')
+      toast(t(STT_UNAVAILABLE_KEY), 'warn')
       return
     }
     const rec = startListening({
+      lang: SPEECH_LOCALES[lang] || 'en-IN',
       onInterim: (text) => setDraft(text),
       onFinal: (text) => {
         setListening(false)
         send(text)
       },
-      onError: (message) => {
+      onError: (code) => {
         setListening(false)
-        toast(message, 'warn')
+        toast(t(VOICE_ERROR_KEYS[code] || 'common.speechMissed'), 'warn')
       },
     })
     if (rec) {
       recognition.current = rec
       setListening(true)
     } else {
-      toast(STT_UNAVAILABLE_NOTE, 'warn')
+      toast(t(STT_UNAVAILABLE_KEY), 'warn')
     }
   }
 
@@ -106,14 +157,14 @@ export default function Companion() {
     const next = !settings.tts
     updateSettings({ tts: next })
     if (!next) stopSpeaking()
-    toast(next ? 'Replies will be read aloud.' : 'Read-aloud turned off.')
+    toast(next ? t('companion.toastTtsOn') : t('companion.toastTtsOff'))
   }
 
   const doClear = () => {
     clearMessages()
     stopSpeaking()
     setConfirmClear(false)
-    toast('Conversation cleared.')
+    toast(t('companion.toastCleared'))
   }
 
   const showQuick = !last || (last.role === 'ai' && !typing)
@@ -124,18 +175,18 @@ export default function Companion() {
       <header className="chat-head">
         <span className="feature-icon" aria-hidden="true"><Sparkles size={19} /></span>
         <div className="chat-head-copy">
-          <h1>Your AI companion</h1>
-          <p>A supportive conversation, whenever you want it. Type or speak.</p>
+          <h1>{t('companion.headTitle')}</h1>
+          <p>{t('companion.headSub')}</p>
         </div>
         <div className="chat-head-actions">
-          <Badge tone="demo">Simulated AI</Badge>
+          <Badge tone="demo">{liveAi ? t('companion.liveAi') : t('companion.simulatedAi')}</Badge>
           <button
             type="button"
             className={`icon-btn ${settings.tts ? 'active' : ''}`}
             onClick={toggleReadAloud}
             aria-pressed={settings.tts}
-            aria-label={settings.tts ? 'Turn read-aloud off' : 'Turn read-aloud on'}
-            title={settings.tts ? 'Read replies aloud: on' : 'Read replies aloud: off'}
+            aria-label={settings.tts ? t('companion.ttsOff') : t('companion.ttsOn')}
+            title={settings.tts ? t('companion.ttsTitleOn') : t('companion.ttsTitleOff')}
           >
             {settings.tts ? <Volume2 size={17} /> : <VolumeX size={17} />}
           </button>
@@ -144,8 +195,8 @@ export default function Companion() {
             className="icon-btn"
             onClick={() => (confirmClear ? doClear() : setConfirmClear(true))}
             onBlur={() => setConfirmClear(false)}
-            aria-label="Clear conversation"
-            title={confirmClear ? 'Click again to clear' : 'Clear conversation'}
+            aria-label={t('companion.clear')}
+            title={confirmClear ? t('companion.clearConfirm') : t('companion.clear')}
           >
             <Trash2 size={16} />
           </button>
@@ -154,18 +205,18 @@ export default function Companion() {
 
       <div style={{ padding: '0.7rem 1.5rem 0' }}>
         <div className="analysis-strip">
-          <b>Simulated sentiment analysis</b>
+          <b>{t('companion.analysis.title')}</b>
           <span className={`meter ${recentSentiment < -0.12 ? 'neg' : ''}`} aria-hidden="true">
             <i style={{ width: `${Math.round(((recentSentiment + 1) / 2) * 100)}%` }} />
           </span>
-          <span>last 5 messages read as {TONE_WORD(recentSentiment)} (score {recentSentiment})</span>
+          <span>{t('companion.analysis.lastFive', { tone: t(sentimentLabelKey(toneLabel(recentSentiment))), score: recentSentiment })}</span>
           {lastUser && (
             <span>
-              · latest: <b>{emotionLabel(lastUser.emotion)}</b>
-              {lastUser.topic && lastUser.topic !== 'General' ? ` · ${lastUser.topic}` : ''}
+              · {t('companion.analysis.latest')} <b>{t(emotionLabelKey(lastUser.emotion))}</b>
+              {lastUser.topic && lastUser.topic !== 'General' ? ` · ${t(topicKey(lastUser.topic))}` : ''}
             </span>
           )}
-          <Badge tone="demo">Demo</Badge>
+          <Badge tone="demo">{t('common.demo')}</Badge>
         </div>
       </div>
 
@@ -173,14 +224,11 @@ export default function Companion() {
         {messages.length === 0 && (
           <div className="empty" style={{ margin: 'auto 0' }}>
             <span className="empty-icon"><Mascot size={26} /></span>
-            <b>Say hello, or share what's on your mind</b>
-            <p className="small">
-              I can listen, help you put words to things and suggest an activity. I'm a simulated
-              companion in this prototype — I don't diagnose, and I'm not a replacement for a person.
-            </p>
+            <b>{t('companion.empty.title')}</b>
+            <p className="small">{t('companion.empty.body')}</p>
             <div className="chip-row" style={{ justifyContent: 'center', marginTop: '0.6rem' }}>
               {QUICK_PROMPTS.slice(0, 3).map((prompt) => (
-                <button key={prompt} type="button" className="chip" onClick={() => send(prompt)}>{prompt}</button>
+                <button key={prompt.labelKey} type="button" className="chip" onClick={() => send(prompt.seed, t(prompt.labelKey))}>{t(prompt.labelKey)}</button>
               ))}
             </div>
           </div>
@@ -191,11 +239,11 @@ export default function Companion() {
           const showFollow = isLast && m.role === 'ai' && !typing
           return (
             <div key={m.id} className={`msg ${m.role === 'user' ? 'msg-user' : 'msg-ai'} ${m.crisis ? 'msg-crisis' : ''}`}>
-              <div className="msg-bubble">{m.text}</div>
+              <div className="msg-bubble">{m.role === 'ai' ? renderReply(m) : m.text}</div>
               <div className="msg-meta">
-                <span>{m.role === 'user' ? 'You' : 'Companion'} · {timeOf(m.at)}</span>
+                <span>{m.role === 'user' ? t('companion.you') : t('companion.name')} · {timeOf(m.at)}</span>
                 {m.role === 'ai' && support.tts && (
-                  <button type="button" onClick={() => speak(m.text)} aria-label="Read this reply aloud" title="Read aloud">
+                  <button type="button" onClick={() => speak(renderReply(m))} aria-label={t('companion.readAloudAria')} title={t('companion.readAloud')}>
                     <Volume2 size={13} />
                   </button>
                 )}
@@ -204,16 +252,16 @@ export default function Companion() {
               {showFollow && followPrompts.length > 0 && (
                 <div className="quick-prompts" style={{ marginTop: '0.45rem' }}>
                   {followPrompts.map((prompt) => (
-                    <button key={prompt} type="button" className="quick-prompt" onClick={() => send(prompt)}>{prompt}</button>
+                    <button key={prompt.labelKey} type="button" className="quick-prompt" onClick={() => send(prompt.seed, t(prompt.labelKey))}>{t(prompt.labelKey)}</button>
                   ))}
                 </div>
               )}
 
               {showFollow && m.suggestion && (
                 <div className="inline-suggestion" style={{ marginTop: '0.45rem' }}>
-                  <span><b>Suggested:</b> {m.suggestion.label}</span>
+                  <span><b>{t('companion.suggested')}</b> {t(m.suggestion.labelKey)}</span>
                   <Link className="btn btn-soft btn-sm" to={m.suggestion.to}>
-                    Open <ArrowRight size={14} />
+                    {t('companion.open')} <ArrowRight size={14} />
                   </Link>
                 </div>
               )}
@@ -226,7 +274,7 @@ export default function Companion() {
             <div className="msg-bubble">
               <span className="typing-row"><i /><i /><i /></span>
             </div>
-            <div className="msg-meta">Companion is thinking…</div>
+            <div className="msg-meta">{t('companion.thinking')}</div>
           </div>
         )}
       </div>
@@ -238,7 +286,7 @@ export default function Companion() {
         {showQuick && messages.length === 0 && (
           <div className="quick-prompts">
             {QUICK_PROMPTS.map((prompt) => (
-              <button key={prompt} type="button" className="quick-prompt" onClick={() => send(prompt)}>{prompt}</button>
+              <button key={prompt.labelKey} type="button" className="quick-prompt" onClick={() => send(prompt.seed, t(prompt.labelKey))}>{t(prompt.labelKey)}</button>
             ))}
           </div>
         )}
@@ -247,8 +295,8 @@ export default function Companion() {
             <textarea
               rows={1}
               value={draft}
-              placeholder="Type what's on your mind…"
-              aria-label="Your message"
+              placeholder={t('companion.placeholder')}
+              aria-label={t('companion.messageAria')}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
@@ -261,31 +309,29 @@ export default function Companion() {
               type="button"
               className={`mic-btn ${listening ? 'mic-listening' : ''}`}
               onClick={toggleMic}
-              aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+              aria-label={listening ? t('companion.micStop') : t('companion.micStart')}
               aria-pressed={listening}
-              title={support.stt ? (listening ? 'Stop' : 'Speak') : 'Voice input not supported in this browser'}
+              title={support.stt ? (listening ? t('companion.stop') : t('companion.speak')) : t(STT_UNAVAILABLE_KEY)}
             >
               <Mic size={17} />
             </button>
           </div>
-          <button className="send-btn" type="submit" disabled={!draft.trim() || typing} aria-label="Send message">
+          <button className="send-btn" type="submit" disabled={!draft.trim() || typing} aria-label={t('companion.send')}>
             <Send size={17} />
           </button>
         </div>
         <p className="composer-hint">
           {listening
-            ? 'Listening — speak now, then pause. Your words appear here before sending.'
+            ? t('companion.hint.listening')
             : !support.stt
-              ? STT_UNAVAILABLE_NOTE
-              : 'Enter to send · Shift + Enter for a new line · Use the microphone to speak instead.'}
+              ? t(STT_UNAVAILABLE_KEY)
+              : t('companion.hint.default')}
         </p>
       </form>
 
       <div style={{ padding: '0 1.5rem 1rem' }}>
         <Note tone="grey">
-          <b>Demo:</b> responses come from a scripted companion and a rule-based sentiment analysis
-          running entirely in your browser. Crisis words always open urgent support straight away —
-          never a score, never a wait.
+          <b>{t('common.demo')}:</b> {t('companion.disclaimer')}
         </Note>
       </div>
     </div>

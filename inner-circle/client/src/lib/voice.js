@@ -14,8 +14,13 @@ export const speechSupport = () => ({
   tts: typeof window !== 'undefined' && typeof window.speechSynthesis !== 'undefined',
 })
 
-export const STT_UNAVAILABLE_NOTE =
-  "Voice input isn't supported in this browser. Try Chrome or Edge, or type your message instead."
+export const STT_UNAVAILABLE_KEY = 'common.sttUnavailable'
+
+/** Maps an app language code onto the speech-recognition locale. */
+export const SPEECH_LOCALES = { en: 'en-IN', hi: 'hi-IN', kn: 'kn-IN' }
+
+/** Error codes returned by onError, plus their translation keys. */
+export const VOICE_ERROR_KEYS = { blocked: 'common.speechBlocked', missed: 'common.speechMissed' }
 
 /**
  * Starts a single recognition session. Interim results are forwarded so the
@@ -43,7 +48,7 @@ export const startListening = ({ onInterim, onFinal, onError, lang = 'en-IN' }) 
     if (finalText && onFinal) onFinal(finalText.trim())
   }
   recognition.onerror = (event) => {
-    if (onError) onError(event.error === 'not-allowed' ? 'Microphone permission was blocked by the browser.' : 'I could not catch that — please try again.')
+    if (onError) onError(event.error === 'not-allowed' ? 'blocked' : 'missed')
   }
   recognition.onend = () => {
     /* the caller restarts if the user is still holding the mic */

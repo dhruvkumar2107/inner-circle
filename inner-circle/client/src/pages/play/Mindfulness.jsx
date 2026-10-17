@@ -1,27 +1,13 @@
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Check, Leaf } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
-const STEPS = [
-  {
-    title: 'Notice three things you can hear',
-    body: 'Wherever you are right now, let your ears do a little work. One near sound, one further away, and one you had not noticed until this moment.',
-    cue: 'You do not need to name them perfectly — just let them arrive.',
-  },
-  {
-    title: 'Feel two points of contact',
-    body: 'Notice your feet resting on the floor, and your back or shoulders touching the chair. Let those points hold you for a few slow seconds.',
-    cue: 'Nothing to fix. Just two places where the world is holding you up.',
-  },
-  {
-    title: 'Take one unhurried breath',
-    body: 'Breathe in gently, and let the out-breath be a little longer than the in-breath. Once is enough. Twice, if it feels nice.',
-    cue: 'That is the whole exercise — short, quiet, and entirely yours.',
-  },
-]
+const STEPS = [0, 1, 2]
 
 export default function Mindfulness() {
   const { toast } = useApp()
+  const t = useT()
   const [step, setStep] = useState(0)
   const [done, setDone] = useState(false)
 
@@ -32,7 +18,7 @@ export default function Mindfulness() {
       return
     }
     setDone(true)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('play.toast.niceWork'))
   }
   const restart = () => {
     setStep(0)
@@ -44,13 +30,12 @@ export default function Mindfulness() {
       <div className="game-shell">
         <div className="mind-panel center">
           <span className="mind-done-icon"><Check size={22} /></span>
-          <h3 style={{ marginTop: '0.6rem' }}>That is your pause, complete</h3>
+          <h3 style={{ marginTop: '0.6rem' }}>{t('play.mindful.doneTitle')}</h3>
           <p className="small muted" style={{ maxWidth: '38ch', margin: '0 auto' }}>
-            Three small steps, about a minute of your day. You showed up for yourself — that
-            genuinely counts. Come back whenever the day feels loud.
+            {t('play.mindful.doneBody')}
           </p>
           <button type="button" className="btn btn-soft btn-sm" style={{ marginTop: '1rem' }} onClick={restart}>
-            <Leaf size={14} /> Do it again
+            <Leaf size={14} /> {t('play.mindful.again')}
           </button>
         </div>
       </div>
@@ -63,23 +48,23 @@ export default function Mindfulness() {
     <div className="game-shell">
       <div className="mind-dots" aria-hidden="true">
         {STEPS.map((s, i) => (
-          <span key={s.title} className={`mind-dot ${i === step ? 'mind-dot-on' : ''}`} />
+          <span key={s} className={`mind-dot ${i === step ? 'mind-dot-on' : ''}`} />
         ))}
       </div>
       <p className="tiny muted center" style={{ margin: '0 0 0.5rem' }}>
-        Step {step + 1} of {STEPS.length}
+        {t('play.mindful.stepOf', { step: step + 1, total: STEPS.length })}
       </p>
       <div className="mind-panel">
-        <h3>{current.title}</h3>
-        <p>{current.body}</p>
-        <p className="small muted" style={{ margin: 0 }}>{current.cue}</p>
+        <h3>{t(`play.mindful.steps.${current}.title`)}</h3>
+        <p>{t(`play.mindful.steps.${current}.body`)}</p>
+        <p className="small muted" style={{ margin: 0 }}>{t(`play.mindful.steps.${current}.cue`)}</p>
       </div>
       <div className="mind-nav">
         <button type="button" className="btn btn-outline btn-sm" onClick={back} disabled={step === 0}>
-          <ArrowLeft size={14} /> Back
+          <ArrowLeft size={14} /> {t('common.back')}
         </button>
         <button type="button" className="btn btn-primary btn-sm" onClick={next}>
-          {step === STEPS.length - 1 ? 'Finish' : 'Next'} <ArrowRight size={14} />
+          {step === STEPS.length - 1 ? t('common.finish') : t('common.next')} <ArrowRight size={14} />
         </button>
       </div>
     </div>

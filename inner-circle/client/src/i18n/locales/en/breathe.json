@@ -1,0 +1,144 @@
+{
+  "kicker": "RELAXATION STUDIO",
+  "title": "Breathe & Reset",
+  "sub": "Short, gentle exercises. Stop whenever you like — returning to normal breathing is always fine.",
+  "status": {
+    "ready": "Ready",
+    "done": "Done"
+  },
+  "controls": {
+    "pause": "Pause",
+    "resume": "Resume",
+    "stop": "Stop",
+    "startAgain": "Start again",
+    "reset": "Reset",
+    "skip": "Skip",
+    "doAgain": "Do it again"
+  },
+  "safetyStop": "You can stop and return to normal breathing whenever you like.",
+  "toastNiceWork": "Nice work taking a moment for yourself.",
+  "voice": {
+    "on": "Voice guidance on",
+    "off": "Voice guidance off",
+    "toggleAria": "Toggle voice guidance"
+  },
+  "exercises": {
+    "minute": {
+      "title": "One-Minute Reset",
+      "short": "Simple 4-6 breathing for one quiet minute"
+    },
+    "box": {
+      "title": "Box breathing",
+      "short": "4-4-4-4 rhythm to steady your mind"
+    },
+    "grounding": {
+      "title": "5-4-3-2-1 Grounding",
+      "short": "Name things around you to come back to now"
+    },
+    "muscle": {
+      "title": "Gentle muscle relaxation",
+      "short": "Tense and release each group in turn"
+    },
+    "mindfulness": {
+      "title": "Short guided mindfulness",
+      "short": "A few gentle prompts to settle in"
+    },
+    "timer": {
+      "title": "Relaxation timer",
+      "short": "Choose your time and breathe gently"
+    }
+  },
+  "phases": {
+    "in": "Breathe in…",
+    "out": "Breathe out…",
+    "inhale": "Inhale…",
+    "exhale": "Exhale…",
+    "hold": "Hold…"
+  },
+  "oneMinute": {
+    "instruction": "Follow the gentle rhythm. No need to force anything."
+  },
+  "box": {
+    "instruction": "4-4-4-4 box breathing. Holding is optional — return to normal breathing whenever you like."
+  },
+  "grounding": {
+    "progress": "Progress: {{current}} / {{total}}",
+    "steps": {
+      "see": {
+        "title": "5 things you can see",
+        "placeholder": "Name something you can see"
+      },
+      "feel": {
+        "title": "4 things you can feel",
+        "placeholder": "Name something you can feel (touch)"
+      },
+      "hear": {
+        "title": "3 things you can hear",
+        "placeholder": "Name something you can hear"
+      },
+      "smell": {
+        "title": "2 things you can smell",
+        "placeholder": "Name something you can smell"
+      },
+      "taste": {
+        "title": "1 thing you can taste",
+        "placeholder": "Name something you can taste"
+      }
+    },
+    "doneTitle": "You are here",
+    "doneBody": "That's enough for now. You can stop and return to normal breathing whenever you like."
+  },
+  "mindfulness": {
+    "steps": {
+      "breath": {
+        "title": "Notice your breath",
+        "body": "Feel the natural flow, no need to change it."
+      },
+      "sounds": {
+        "title": "Notice sounds",
+        "body": "Gently notice sounds near and far."
+      },
+      "sensation": {
+        "title": "Notice one sensation",
+        "body": "Find one gentle sensation to rest your attention on."
+      },
+      "intention": {
+        "title": "Choose one gentle intention",
+        "body": "Pick a word like \"calm\", \"kind\", or one of your own."
+      }
+    },
+    "doneTitle": "Settled",
+    "doneBody": "You are here. That's enough for now."
+  },
+  "muscle": {
+    "tenseLine": "Tense: {{action}}",
+    "release": "Release and soften",
+    "groups": {
+      "toes": {
+        "title": "Toes",
+        "tense": "Curl your toes tight"
+      },
+      "legs": {
+        "title": "Legs",
+        "tense": "Tighten your legs"
+      },
+      "shoulders": {
+        "title": "Shoulders",
+        "tense": "Lift and tense your shoulders"
+      },
+      "hands": {
+        "title": "Hands",
+        "tense": "Make fists"
+      },
+      "face": {
+        "title": "Face",
+        "tense": "Scrunch your face"
+      }
+    },
+    "doneTitle": "All groups relaxed",
+    "doneBody": "Take a moment. You can stop and return to normal breathing whenever you like."
+  },
+  "timer": {
+    "breathing": "Gentle breathing"
+  }
+}

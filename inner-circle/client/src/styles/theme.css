@@ -5,8 +5,8 @@
    ========================================================================== */
 
 :root {
-  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Fraunces', 'Nunito', Georgia, serif;
+  --font-body: 'Nunito', 'Noto Sans Devanagari', 'Noto Sans Kannada', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'Nunito', Georgia, serif;
 
   --bg: #ffffff;
   --bg-soft: #f7faf6;
@@ -771,3 +771,40 @@ input, select, textarea { font-family: inherit; font-size: 0.95rem; color: var(-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* --------------------------------------------------------------------------
+   Language picker (shell topbar + settings)
+   -------------------------------------------------------------------------- */
+.lang-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: var(--bg);
+  color: var(--muted);
+}
+.lang-picker:hover { border-color: var(--sage); color: var(--sage-700); }
+.lang-picker:focus-within { box-shadow: var(--ring); border-color: var(--sage); }
+.lang-picker select {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-2);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 0.9rem;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: right 0.35rem center, right 0.1rem center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+.lang-picker select:focus { outline: none; }
+.lang-picker-compact select { max-width: 5.5rem; }
+
+.topbar-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+

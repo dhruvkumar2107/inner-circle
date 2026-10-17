@@ -75,10 +75,10 @@ export const RULES = [
 ]
 
 export const OUTPUT_CATEGORIES = {
-  Low: { label: 'Lower reported symptom severity', tone: 'low' },
-  Moderate: { label: 'Moderate reported symptom severity', tone: 'mid' },
-  Elevated: { label: 'Moderate-to-higher reported symptoms', tone: 'mid' },
-  High: { label: 'Higher reported symptom severity', tone: 'high' },
+  Low: { labelKey: 'how.category.lower', tone: 'low' },
+  Moderate: { labelKey: 'how.category.moderate', tone: 'mid' },
+  Elevated: { labelKey: 'how.category.elevated', tone: 'mid' },
+  High: { labelKey: 'how.category.high', tone: 'high' },
 }
 
 export const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
@@ -98,11 +98,11 @@ export const fuzzify = (value, mf) => {
 const DEFAULTS = { phq9: 0, gad7: 0, sentiment: 0, stress: 5, functional: 0, safetyOverride: false }
 
 const CONTRIBUTOR_LABELS = {
-  phq9: 'PHQ-9 screening responses',
-  gad7: 'GAD-7 screening responses',
-  sentiment: 'Recent emotional expression',
-  stress: 'Self-reported stress',
-  functional: 'Effect on daily activities',
+  phq9: 'how.contributor.phq9',
+  gad7: 'how.contributor.gad7',
+  sentiment: 'how.contributor.sentiment',
+  stress: 'how.contributor.stress',
+  functional: 'how.contributor.functional',
 }
 
 /**
@@ -185,32 +185,32 @@ export const inferSupport = (raw = {}) => {
         : 'High'
 
   const totalContribution = Object.values(contribution).reduce((sum, v) => sum + v, 0)
-  const contributors = Object.keys(contribution)
+  const   contributors = Object.keys(contribution)
     .filter((input) => contribution[input] > 0)
     .map((input) => ({
-      factor: CONTRIBUTOR_LABELS[input],
+      factorKey: CONTRIBUTOR_LABELS[input],
       weight: Number((contribution[input] / Math.max(totalContribution, 1)).toFixed(3)),
     }))
     .sort((a, b) => b.weight - a.weight)
 
   const narrative = []
-  if (memberships.phq9.Moderate > 0.3 || memberships.phq9.High > 0.3) narrative.push('mood-related concerns in your screening responses')
-  if (memberships.gad7.Moderate > 0.3 || memberships.gad7.High > 0.3) narrative.push('anxiety-related concerns in your screening responses')
-  if (memberships.stress.High > 0.3) narrative.push('elevated stress')
-  if (memberships.sentiment.Negative > 0.3) narrative.push('recently expressed difficult feelings')
-  if (memberships.functional.High > 0.3) narrative.push('daily activities feeling more affected')
+  if (memberships.phq9.Moderate > 0.3 || memberships.phq9.High > 0.3) narrative.push('how.narrative.mood')
+  if (memberships.gad7.Moderate > 0.3 || memberships.gad7.High > 0.3) narrative.push('how.narrative.anxiety')
+  if (memberships.stress.High > 0.3) narrative.push('how.narrative.stressHigh')
+  if (memberships.sentiment.Negative > 0.3) narrative.push('how.narrative.sentimentNeg')
+  if (memberships.functional.High > 0.3) narrative.push('how.narrative.functionalHigh')
 
   return {
     inputs,
     riskScore,
     tier,
     category,
-    categoryLabel: OUTPUT_CATEGORIES[category].label,
+    categoryLabelKey: OUTPUT_CATEGORIES[category].labelKey,
     tone: OUTPUT_CATEGORIES[category].tone,
     memberships,
     firedRules,
     contributors,
-    narrative: narrative.length ? narrative : ['indicators within the lower range'],
+    narrative: narrative.length ? narrative : ['how.narrative.lower'],
     safetyOverride,
     warning,
     suggestions: suggestionsFor(category, safetyOverride),
@@ -220,28 +220,28 @@ export const inferSupport = (raw = {}) => {
 export const suggestionsFor = (category, safetyOverride = false) => {
   if (safetyOverride) {
     return [
-      { key: 'professional', label: 'Reach a person now', to: '/professional', note: 'Urgent support options come first.' },
-      { key: 'talk', label: 'Talk to your companion', to: '/companion', note: 'A supportive conversation while you decide on the next step.' },
+      { key: 'professional', labelKey: 'how.suggestion.professionalNow', to: '/professional', noteKey: 'how.suggestion.noteProfessionalNow' },
+      { key: 'talk', labelKey: 'how.suggestion.talk', to: '/companion', noteKey: 'how.suggestion.noteTalk' },
     ]
   }
   if (category === 'Low') {
     return [
-      { key: 'breathe', label: 'Relaxation and self-care activities', to: '/breathe', note: 'Keep the small habits that are working.' },
-      { key: 'mood', label: 'Repeat a check-in when it suits you', to: '/mood', note: 'A weekly rhythm is plenty for lower-range results.' },
+      { key: 'breathe', labelKey: 'how.suggestion.breathe', to: '/breathe', noteKey: 'how.suggestion.noteBreathe' },
+      { key: 'mood', labelKey: 'how.suggestion.mood', to: '/mood', noteKey: 'how.suggestion.noteMood' },
     ]
   }
   if (category === 'Moderate' || category === 'Elevated') {
     return [
-      { key: 'talk', label: 'Supportive AI conversation', to: '/companion', note: 'Talk through what is driving these feelings.' },
-      { key: 'breathe', label: 'Grounding or breathing exercise', to: '/breathe', note: 'Short daily practice can lower the background noise.' },
-      { key: 'mood', label: 'Repeat this check-in sooner', to: '/mood', note: 'Re-check in a few days to see which direction things are moving.' },
-      { key: 'professional', label: 'Consider contacting a professional', to: '/professional', note: 'A qualified person can confirm what these results mean.' },
+      { key: 'talk', labelKey: 'how.suggestion.talkSupportive', to: '/companion', noteKey: 'how.suggestion.noteTalkSupportive' },
+      { key: 'breathe', labelKey: 'how.suggestion.breatheGrounding', to: '/breathe', noteKey: 'how.suggestion.noteBreatheGrounding' },
+      { key: 'mood', labelKey: 'how.suggestion.moodSooner', to: '/mood', noteKey: 'how.suggestion.noteMoodSooner' },
+      { key: 'professional', labelKey: 'how.suggestion.professionalConsider', to: '/professional', noteKey: 'how.suggestion.noteProfessionalConsider' },
     ]
   }
   return [
-    { key: 'professional', label: 'Contact a qualified professional', to: '/professional', note: 'The Department of Psychiatry at DSU can guide you.' },
-    { key: 'talk', label: 'Talk to your companion now', to: '/companion', note: 'You do not have to carry this alone while you arrange support.' },
-    { key: 'breathe', label: 'A gentle calming exercise', to: '/breathe', note: 'Something small to steady the next hour.' },
+    { key: 'professional', labelKey: 'how.suggestion.professionalContact', to: '/professional', noteKey: 'how.suggestion.noteProfessionalContact' },
+    { key: 'talk', labelKey: 'how.suggestion.talkNow', to: '/companion', noteKey: 'how.suggestion.noteTalkNow' },
+    { key: 'breathe', labelKey: 'how.suggestion.breatheGentle', to: '/breathe', noteKey: 'how.suggestion.noteBreatheGentle' },
   ]
 }
 

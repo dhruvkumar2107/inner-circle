@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { load, save, remove, uid, todayKey } from '../lib/storage'
+import { useI18n } from '../i18n'
+import { getLastFired, isPast, notify, setLastFired } from '../lib/reminders'
 
 const KEYS = {
   profile: 'ic.profile',
@@ -15,6 +17,8 @@ const KEYS = {
 const DEFAULT_SETTINGS = {
   tts: false,
   voiceGuidance: false,
+  reminders: false,
+  reminderTime: '19:00',
 }
 
 /**
@@ -33,6 +37,7 @@ const demoHash = (value) => {
 }
 
 export function AppProvider({ children }) {
+  const { t, lang } = useI18n()
   const [profile, setProfile] = useState(() => load(KEYS.profile, null))
   const [consents, setConsents] = useState(() => load(KEYS.consents, { terms: false, research: false, termsAt: null }))
   const [settings, setSettings] = useState(() => ({ ...DEFAULT_SETTINGS, ...load(KEYS.settings, {}) }))
@@ -163,6 +168,26 @@ export function AppProvider({ children }) {
   }, [messages])
 
   const todaysMood = useMemo(() => moods.find((m) => m.date === todayKey()) || null, [moods])
+
+  /**
+   * Optional, gentle daily mood check-in reminder. Off by default and entirely
+   * passive: it only checks while this tab is open (no service worker / push),
+   * never fires if the user already checked in, and fires at most once a day.
+   */
+  useEffect(() => {
+    if (!profile || !settings.reminders || todaysMood) return undefined
+    const tick = () => {
+      const key = todayKey()
+      if (getLastFired() === key) return
+      if (!isPast(settings.reminderTime)) return
+      notify(t('settings.reminders.notifyTitle'), t('settings.reminders.notifyBody'))
+      toast(t('settings.reminders.toastBody'))
+      setLastFired(key)
+    }
+    tick()
+    const timer = setInterval(tick, 60000)
+    return () => clearInterval(timer)
+  }, [profile, settings.reminders, settings.reminderTime, todaysMood, toast, t, lang])
 
   const value = {
     profile,

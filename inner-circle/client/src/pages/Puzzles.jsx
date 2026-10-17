@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Brain, ChessKnight, Gamepad2, Grid3X3, Puzzle, Search, Sparkles, Leaf } from 'lucide-react'
 import { Badge, Modal, Note, PageHeader } from '../components/ui'
 import { useApp } from '../context/AppContext'
+import { useT } from '../i18n'
 import './Puzzles.css'
 
 import BlockPuzzle from './puzzles/BlockPuzzle'
@@ -16,58 +17,36 @@ const ACTIVITIES = [
   {
     key: 'block',
     icon: Grid3X3,
-    title: 'Block puzzle',
-    body: 'Drop simple shapes onto a 9x9 board and clear full rows and columns.',
-    kicker: 'BRAIN ACTIVITY',
     Component: BlockPuzzle,
   },
   {
     key: 'sudoku',
     icon: Puzzle,
-    title: 'Sudoku',
-    body: 'A gentle 9x9 puzzle with a fresh grid each time and a check button.',
-    kicker: 'BRAIN ACTIVITY',
     Component: SudokuBoard,
   },
   {
     key: 'wordsearch',
     icon: Search,
-    title: 'Word search',
-    body: 'Find eight calm, study-themed words hidden in a 12x12 grid.',
-    kicker: 'BRAIN ACTIVITY',
     Component: WordSearch,
   },
   {
     key: 'jigsaw',
     icon: Sparkles,
-    title: 'Jigsaw',
-    body: 'Swap the tiles of a soothing picture until it all comes together.',
-    kicker: 'BRAIN ACTIVITY',
     Component: Jigsaw,
   },
   {
     key: 'riddles',
     icon: Brain,
-    title: 'Riddles',
-    body: 'Five little riddles to turn over, with hints whenever you like.',
-    kicker: 'BRAIN ACTIVITY',
     Component: RiddleGame,
   },
   {
     key: 'memory',
     icon: Gamepad2,
-    title: 'Memory puzzles',
-    body: 'Match the calming pairs on a 4x4 board at your own pace.',
-    kicker: 'BRAIN ACTIVITY',
     Component: MemoryPuzzle,
   },
   {
     key: 'chess',
     icon: ChessKnight,
-    title: 'Chess',
-    body: 'Planned for v2.',
-    kicker: 'COMING SOON',
-    planned: true,
     Component: ChessPreview,
   },
 ]
@@ -75,28 +54,32 @@ const ACTIVITIES = [
 export default function Puzzles() {
   const [open, setOpen] = useState(null)
   const { toast } = useApp()
+  const t = useT()
 
   const active = open ? ACTIVITIES.find((a) => a.key === open) : null
 
   const handleComplete = () => {
-    toast('Nice work taking a moment for yourself.')
+    toast(t('puzzles.toast.niceWork'))
   }
 
   return (
     <div className="page">
-      <PageHeader kicker="BRAIN ACTIVITIES" title="Puzzles" sub="Quiet mental exercises — play one, or come back later." />
+      <PageHeader
+        kicker={t('puzzles.header.kicker')}
+        title={t('puzzles.header.title')}
+        sub={t('puzzles.header.sub')}
+      />
 
       <div className="grid grid-auto puzzle-grid">
-        {ACTIVITIES.map(({ key, icon: Icon, title, body, planned }) => (
+        {ACTIVITIES.map(({ key, icon: Icon }) => (
           <div key={key} className="card card-click feature-card puzzle-card" onClick={() => setOpen(key)}>
             <span className="puzzle-card-top">
               <span className="feature-icon"><Icon size={19} /></span>
-              {planned && <Badge tone="demo">Planned</Badge>}
             </span>
-            <b>{title}</b>
-            <p>{body}</p>
+            <b>{key === 'chess' ? t('puzzles.chessCard.title') : t(`puzzles.activities.${key}.title`)}</b>
+            <p>{key === 'chess' ? t('puzzles.chessCard.subtitle') : t(`puzzles.activities.${key}.body`)}</p>
             <button type="button" className="btn btn-soft btn-sm" onClick={() => setOpen(key)}>
-              {planned ? 'Preview' : 'Play'}
+              {t('puzzles.play')}
             </button>
           </div>
         ))}
@@ -104,25 +87,24 @@ export default function Puzzles() {
 
       {active && (
         <Modal
-          kicker={active.kicker}
-          title={plannedTitle(active)}
+          kicker={t('puzzles.kicker.activity')}
+          title={keyTitle(active.key, t)}
           wide={active.key !== 'chess'}
           onClose={() => setOpen(null)}
         >
-          <active.Component onComplete={handleComplete} planned={Boolean(active.planned)} />
+          <active.Component onComplete={handleComplete} />
         </Modal>
       )}
 
       <div style={{ marginTop: '1.6rem' }}>
         <Note tone="mint" icon={Leaf}>
-          These puzzles are here for a calm pause. They are not treatment — take your time, and there is
-          nothing to prove.
+          {t('puzzles.note')}
         </Note>
       </div>
     </div>
   )
 }
 
-function plannedTitle(activity) {
-  return activity.planned ? 'Chess — planned for v2' : activity.title
+function keyTitle(key, t) {
+  return key === 'chess' ? t('puzzles.chessCard.title') : t(`puzzles.activities.${key}.title`)
 }

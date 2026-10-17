@@ -1,0 +1,24 @@
+{
+  "intro": "Over the last 2 weeks, how often have you been bothered by the following problems?",
+  "disclaimer": "This is a screening result, not a medical diagnosis. It describes the symptoms you reported today.",
+  "instrumentNote": "The PHQ-9 and GAD-7 questions and answer options are shown in their validated original English wording. The rest of this page is translated.",
+  "responses": {
+    "notAtAll": "Not at all",
+    "severalDays": "Several days",
+    "moreThanHalf": "More than half the days",
+    "nearlyEveryDay": "Nearly every day"
+  },
+  "difficulty": {
+    "notAtAll": "Not difficult at all",
+    "somewhat": "Somewhat difficult",
+    "very": "Very difficult",
+    "extremely": "Extremely difficult"
+  },
+  "severity": {
+    "minimal": { "label": "Minimal reported symptoms", "short": "Minimal" },
+    "mild": { "label": "Mild reported symptoms", "short": "Mild" },
+    "moderate": { "label": "Moderate reported symptoms", "short": "Moderate" },
+    "moderatelySevere": { "label": "Moderately severe reported symptoms", "short": "Moderately severe" },
+    "severe": { "label": "Severe reported symptoms", "short": "Severe" }
+  }
+}

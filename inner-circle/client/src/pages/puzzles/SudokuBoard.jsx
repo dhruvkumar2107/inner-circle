@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useI18n } from '../../i18n'
 
 const SIZE = 9
 const BOX = 3
@@ -92,6 +93,7 @@ function generatePuzzle() {
 }
 
 export default function SudokuBoard({ onComplete }) {
+  const { t } = useI18n()
   const [{ puzzle, solution }, setPuzzle] = useState(() => generatePuzzle())
   const [grid, setGrid] = useState(() => clone(puzzle))
   const [fixed, setFixed] = useState(() => {
@@ -167,13 +169,13 @@ export default function SudokuBoard({ onComplete }) {
     <div className="puzzle-view">
       <div className="puzzle-controls spread">
         <div className="puzzle-controls">
-          <button type="button" className="btn btn-outline btn-sm" onClick={newPuzzle}>New puzzle</button>
-          <button type="button" className="btn btn-outline btn-sm" onClick={check}>Check</button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={clearCell}>Clear</button>
+          <button type="button" className="btn btn-outline btn-sm" onClick={newPuzzle}>{t('puzzles.sudoku.newPuzzle')}</button>
+          <button type="button" className="btn btn-outline btn-sm" onClick={check}>{t('puzzles.sudoku.check')}</button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={clearCell}>{t('puzzles.sudoku.clear')}</button>
         </div>
-        {correctCount != null && <span className="puzzle-stat">Correct: {correctCount}</span>}
+        {correctCount != null && <span className="puzzle-stat">{t('puzzles.sudoku.correct', { n: correctCount })}</span>}
       </div>
-      <div className="puzzle-board sudoku-grid" role="grid" aria-label="Sudoku board">
+      <div className="puzzle-board sudoku-grid" role="grid" aria-label={t('puzzles.sudoku.boardLabel')}>
         {Array(SIZE*SIZE).fill().map((_, i) => {
           const r = Math.floor(i/SIZE), c = i%SIZE
           const val = grid[r][c] === EMPTY ? '' : grid[r][c]
@@ -185,7 +187,7 @@ export default function SudokuBoard({ onComplete }) {
               type="button"
               className={`tile-btn ${isSel ? 'selected' : ''} ${conflict ? 'conflict' : ''}`}
               onClick={() => setSelected([r,c])}
-              aria-label={`Cell ${r+1},${c+1}`}
+              aria-label={t('puzzles.sudoku.cellLabel', { row: r + 1, col: c + 1 })}
             >
               {val}
             </button>
@@ -197,7 +199,7 @@ export default function SudokuBoard({ onComplete }) {
           <button key={i} type="button" className="piece-btn" onClick={() => setValue(i+1)}>{i+1}</button>
         ))}
       </div>
-      <p className="puzzle-hint">Click cell, then number. Check compares against solution.</p>
+      <p className="puzzle-hint">{t('puzzles.sudoku.hint')}</p>
     </div>
   )
 }

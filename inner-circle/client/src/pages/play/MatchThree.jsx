@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const SIZE = 6
 const TILES = ['#6e9169', '#a7c9a4', '#efe2bc', '#a9c6d9', '#dcae55', '#c07f7a']
@@ -77,6 +78,7 @@ const adjacent = (a, b) => {
 
 export default function MatchThree({ best = 0, onBest }) {
   const { toast } = useApp()
+  const t = useT()
   const [board, setBoard] = useState(makeBoard)
   const [selected, setSelected] = useState(null)
   const [score, setScore] = useState(0)
@@ -122,8 +124,8 @@ export default function MatchThree({ best = 0, onBest }) {
       onBest?.(next)
     }
     setBusy(false)
-    if (chain > 1) toast('Nice chain — they keep falling into place.')
-  }, [onBest, toast])
+    if (chain > 1) toast(t('play.toast.chain'))
+  }, [onBest, toast, t])
 
   const clickTile = (i) => {
     if (busy) return
@@ -162,21 +164,21 @@ export default function MatchThree({ best = 0, onBest }) {
   return (
     <div className="game-shell">
       <div className="game-hud">
-        <span className="game-score">Score <b>{score}</b></span>
-        <span className="game-score">Moves <b>{moves}</b></span>
-        {bestScore > 0 && <span className="game-score">Best <b>{bestScore}</b></span>}
+        <span className="game-score">{t('play.hud.score')} <b>{score}</b></span>
+        <span className="game-score">{t('play.hud.moves')} <b>{moves}</b></span>
+        {bestScore > 0 && <span className="game-score">{t('play.hud.best')} <b>{bestScore}</b></span>}
         <button type="button" className="btn btn-outline btn-sm" style={{ marginLeft: 'auto' }} onClick={newGame}>
-          <RotateCcw size={14} /> New game
+          <RotateCcw size={14} /> {t('play.match.newGame')}
         </button>
       </div>
-      <div className="match-grid" role="group" aria-label="Match-three board, 6 by 6">
+      <div className="match-grid" role="group" aria-label={t('play.match.boardLabel')}>
         {board.map((v, i) => (
           <button
             key={i}
             type="button"
             className={`match-tile ${selected === i ? 'match-tile-on' : ''}`}
             style={{ background: TILES[v] }}
-            aria-label={`Tile row ${Math.floor(i / SIZE) + 1} column ${(i % SIZE) + 1}${selected === i ? ', selected' : ''}`}
+            aria-label={`${t('play.match.tileLabel', { row: Math.floor(i / SIZE) + 1, col: (i % SIZE) + 1 })}${selected === i ? t('play.match.tileSelected') : ''}`}
             aria-pressed={selected === i}
             disabled={busy}
             onClick={() => clickTile(i)}
@@ -184,7 +186,7 @@ export default function MatchThree({ best = 0, onBest }) {
         ))}
       </div>
       <p className="tiny muted center" style={{ margin: '0.7rem 0 0' }}>
-        Tap a tile, then an adjacent one to swap. Lines of three or more clear and new tiles fall in.
+        {t('play.match.footer')}
       </p>
     </div>
   )

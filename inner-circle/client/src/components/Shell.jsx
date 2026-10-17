@@ -5,32 +5,34 @@ import {
   Puzzle, Settings as SettingsIcon, Stethoscope, Wind, X,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { useT } from '../i18n'
 import { todayKey } from '../lib/storage'
+import LanguagePicker from './LanguagePicker'
 import { Brand, LeafMark, SafetyModal } from './ui'
 
 const NAV_GROUPS = [
   {
-    label: 'Your space',
+    labelKey: 'nav.groupSpace',
     items: [
-      { to: '/home', label: 'Home', icon: Home },
-      { to: '/companion', label: 'AI Companion', icon: MessageCircle },
-      { to: '/mood', label: 'My Mood Journey', icon: CalendarDays },
-      { to: '/assessments', label: 'Mental Health Check-in', icon: ClipboardCheck },
+      { to: '/home', labelKey: 'nav.home', icon: Home },
+      { to: '/companion', labelKey: 'nav.companion', icon: MessageCircle },
+      { to: '/mood', labelKey: 'nav.mood', icon: CalendarDays },
+      { to: '/assessments', labelKey: 'nav.assessments', icon: ClipboardCheck },
     ],
   },
   {
-    label: 'Unwind',
+    labelKey: 'nav.groupUnwind',
     items: [
-      { to: '/play', label: 'Play & Relax', icon: Gamepad2 },
-      { to: '/breathe', label: 'Breathe & Reset', icon: Wind },
-      { to: '/puzzles', label: 'Puzzles', icon: Puzzle },
+      { to: '/play', labelKey: 'nav.play', icon: Gamepad2 },
+      { to: '/breathe', labelKey: 'nav.breathe', icon: Wind },
+      { to: '/puzzles', labelKey: 'nav.puzzles', icon: Puzzle },
     ],
   },
   {
-    label: 'Support',
+    labelKey: 'nav.groupSupport',
     items: [
-      { to: '/professional', label: 'Contact a Professional', icon: Stethoscope },
-      { to: '/how', label: 'How Inner Circle Works', icon: Compass },
+      { to: '/professional', labelKey: 'nav.professional', icon: Stethoscope },
+      { to: '/how', labelKey: 'nav.how', icon: Compass },
     ],
   },
 ]
@@ -38,6 +40,7 @@ const NAV_GROUPS = [
 export function AppShell() {
   const navigate = useNavigate()
   const location = useLocation()
+  const t = useT()
   const { profile, signOut, safetyOpen, safetyTrigger, openSafety, closeSafety, toasts, dismissToast, moods } = useApp()
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -58,23 +61,23 @@ export function AppShell() {
     <div className="shell">
       <div className={`scrim ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(false)} aria-hidden="true" />
 
-      <aside className={`sidebar ${menuOpen ? 'open' : ''}`} aria-label="Main navigation">
+      <aside className={`sidebar ${menuOpen ? 'open' : ''}`} aria-label={t('nav.mainNav')}>
         <div className="sidebar-brand">
           <Brand />
-          <button className="icon-btn" style={{ position: 'absolute', top: '0.9rem', right: '0.7rem' }} onClick={() => setMenuOpen(false)} aria-label="Close navigation">
+          <button className="icon-btn" style={{ position: 'absolute', top: '0.9rem', right: '0.7rem' }} onClick={() => setMenuOpen(false)} aria-label={t('nav.closeNav')}>
             <X size={17} />
           </button>
         </div>
 
         {NAV_GROUPS.map((group) => (
-          <div key={group.label}>
-            <div className="side-group">{group.label}</div>
+          <div key={group.labelKey}>
+            <div className="side-group">{t(group.labelKey)}</div>
             <nav className="side-nav">
-              {group.items.map(({ to, label, icon: Icon }) => (
+              {group.items.map(({ to, labelKey, icon: Icon }) => (
                 <NavLink key={to} to={to} className={({ isActive }) => `side-link ${isActive ? 'side-link-active' : ''}`}>
                   <Icon size={18} />
-                  <span>{label}</span>
-                  {to === '/home' && !checkedInToday && <i style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: 'var(--sage)' }} aria-label="Mood check-in not done today" />}
+                  <span>{t(labelKey)}</span>
+                  {to === '/home' && !checkedInToday && <i style={{ marginLeft: 'auto', width: 6, height: 6, borderRadius: '50%', background: 'var(--sage)' }} aria-label={t('nav.notCheckedIn')} />}
                 </NavLink>
               ))}
             </nav>
@@ -86,17 +89,17 @@ export function AppShell() {
         <nav className="side-nav">
           <NavLink to="/settings" className={({ isActive }) => `side-link ${isActive ? 'side-link-active' : ''}`}>
             <SettingsIcon size={18} />
-            <span>Settings &amp; Privacy</span>
+            <span>{t('nav.settings')}</span>
           </NavLink>
         </nav>
 
         <div className="sidebar-user">
           <span className="user-avatar"><LeafMark size={17} /></span>
           <span className="user-copy">
-            <b>{profile?.firstName || 'Friend'}</b>
-            <small>{profile?.university || 'Student'} · demo profile</small>
+            <b>{profile?.firstName || t('nav.friend')}</b>
+            <small>{profile?.university || t('nav.student')} · {t('nav.demoProfile')}</small>
           </span>
-          <button className="icon-btn" onClick={handleSignOut} aria-label="Sign out" title="Sign out">
+          <button className="icon-btn" onClick={handleSignOut} aria-label={t('nav.signOut')} title={t('nav.signOut')}>
             <LogOut size={15} />
           </button>
         </div>
@@ -104,16 +107,17 @@ export function AppShell() {
 
       <div className="workspace">
         <header className="topbar">
-          <button className="mobile-menu" onClick={() => setMenuOpen(true)} aria-label="Open navigation">
+          <button className="mobile-menu" onClick={() => setMenuOpen(true)} aria-label={t('nav.openNav')}>
             <Menu size={19} />
           </button>
           <div className="topbar-title">
             <b>Inner Circle</b>
-            <span>Your quiet space between feelings and the next step.</span>
+            <span>{t('nav.tagline')}</span>
           </div>
           <div className="topbar-actions">
+            <LanguagePicker compact />
             <button className="btn btn-soft btn-sm" onClick={() => openSafety('manual')}>
-              <Heart size={15} /> I need help now
+              <Heart size={15} /> {t('nav.helpNow')}
             </button>
           </div>
         </header>
@@ -127,7 +131,7 @@ export function AppShell() {
         {toasts.map((t) => (
           <div key={t.id} className={`toast ${t.tone === 'warn' ? 'toast-warn' : ''}`}>
             <span>{t.message}</span>
-            <button onClick={() => dismissToast(t.id)} aria-label="Dismiss"><X size={14} /></button>
+            <button onClick={() => dismissToast(t.id)} aria-label={t('nav.toastDismiss')}><X size={14} /></button>
           </div>
         ))}
       </div>

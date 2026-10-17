@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const STEPS = [
-  { title: 'Notice your breath', body: 'Feel the natural flow, no need to change it.' },
-  { title: 'Notice sounds', body: 'Gently notice sounds near and far.' },
-  { title: 'Notice one sensation', body: 'Find one gentle sensation to rest your attention on.' },
-  { title: 'Choose one gentle intention', body: 'Pick a word like "calm", "kind", or one of your own.' },
+  { titleKey: 'breathe.mindfulness.steps.breath.title', bodyKey: 'breathe.mindfulness.steps.breath.body' },
+  { titleKey: 'breathe.mindfulness.steps.sounds.title', bodyKey: 'breathe.mindfulness.steps.sounds.body' },
+  { titleKey: 'breathe.mindfulness.steps.sensation.title', bodyKey: 'breathe.mindfulness.steps.sensation.body' },
+  { titleKey: 'breathe.mindfulness.steps.intention.title', bodyKey: 'breathe.mindfulness.steps.intention.body' },
 ]
 
 export default function Mindfulness() {
+  const t = useT()
   const { toast } = useApp()
   const [index, setIndex] = useState(0)
   const [done, setDone] = useState(false)
@@ -18,7 +20,7 @@ export default function Mindfulness() {
       setIndex(index + 1)
     } else {
       setDone(true)
-      toast('Nice work taking a moment for yourself.')
+      toast(t('breathe.toastNiceWork'))
     }
   }
   const back = () => {
@@ -33,10 +35,10 @@ export default function Mindfulness() {
     return (
       <div className="card card-pad">
         <div className="breath-stage">
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>Settled</h2>
-          <p className="breath-instruction">You are here. That's enough for now.</p>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>{t('breathe.mindfulness.doneTitle')}</h2>
+          <p className="breath-instruction">{t('breathe.mindfulness.doneBody')}</p>
           <button type="button" className="btn btn-primary" onClick={reset}>
-            Do it again
+            {t('breathe.controls.doAgain')}
           </button>
         </div>
       </div>
@@ -48,19 +50,19 @@ export default function Mindfulness() {
     <div className="card card-pad">
       <div className="step-card">
         <h3>
-          {step.title} · {index + 1}/{STEPS.length}
+          {t(step.titleKey)} · {index + 1}/{STEPS.length}
         </h3>
-        <p>{step.body}</p>
+        <p>{t(step.bodyKey)}</p>
         <div className="ctrl-row" style={{ justifyContent: 'space-between', marginTop: '0.8rem' }}>
           <button type="button" className="btn btn-ghost" onClick={back} disabled={index === 0}>
-            Back
+            {t('common.back')}
           </button>
           <button type="button" className="btn btn-primary" onClick={next}>
-            {index === STEPS.length - 1 ? 'Finish' : 'Next'}
+            {index === STEPS.length - 1 ? t('common.finish') : t('common.next')}
           </button>
         </div>
       </div>
-      <div className="breath-instruction">You can stop and return to normal breathing whenever you like.</div>
+      <div className="breath-instruction">{t('breathe.safetyStop')}</div>
     </div>
   )
 }

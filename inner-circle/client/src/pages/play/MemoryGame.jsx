@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const EMOJI = ['🌿', '☀️', '🌸', '🐢', '🌈', '⭐', '🍀', '🌊']
 
@@ -15,6 +16,7 @@ function makeDeck() {
 
 export default function MemoryGame({ best = null, onBest }) {
   const { toast } = useApp()
+  const t = useT()
   const [deck, setDeck] = useState(makeDeck)
   const [flipped, setFlipped] = useState([])
   const [matched, setMatched] = useState([])
@@ -62,7 +64,7 @@ export default function MemoryGame({ best = null, onBest }) {
             setFewest(total)
             onBest?.(total)
           }
-          toast('You found every pair — lovely focus. Nice work taking a moment for yourself.')
+          toast(t('play.toast.foundAll'))
         }
       }, 380))
     } else {
@@ -76,13 +78,13 @@ export default function MemoryGame({ best = null, onBest }) {
   return (
     <div className="game-shell">
       <div className="game-hud">
-        <span className="game-score">Moves <b>{moves}</b></span>
-        <span className="game-score">Pairs <b>{matched.length / 2}/8</b></span>
+        <span className="game-score">{t('play.hud.moves')} <b>{moves}</b></span>
+        <span className="game-score">{t('play.hud.pairs')} <b>{matched.length / 2}/8</b></span>
         {fewest !== null && fewest !== undefined && (
-          <span className="game-score">Fewest <b>{fewest}</b></span>
+          <span className="game-score">{t('play.hud.fewest')} <b>{fewest}</b></span>
         )}
         <button type="button" className="btn btn-outline btn-sm" style={{ marginLeft: 'auto' }} onClick={newGame}>
-          <RotateCcw size={14} /> New game
+          <RotateCcw size={14} /> {t('play.memory.newGame')}
         </button>
       </div>
       <div className="memory-grid">
@@ -94,7 +96,7 @@ export default function MemoryGame({ best = null, onBest }) {
               key={card.id}
               type="button"
               className={`memory-card ${open ? 'memory-card-on' : ''} ${isMatch ? 'memory-card-matched' : ''}`}
-              aria-label={open ? `Card ${i + 1}, ${card.emoji}` : `Card ${i + 1}, face down`}
+              aria-label={open ? t('play.memory.cardOpen', { n: i + 1, emoji: card.emoji }) : t('play.memory.cardDown', { n: i + 1 })}
               aria-pressed={open}
               disabled={isMatch}
               onClick={() => clickCard(i)}
@@ -109,15 +111,15 @@ export default function MemoryGame({ best = null, onBest }) {
       </div>
       {won && (
         <div className="game-over" style={{ marginTop: '0.9rem' }}>
-          <b>All eight pairs found</b>
+          <b>{t('play.memory.winTitle')}</b>
           <p className="small muted" style={{ margin: '0.3rem 0 0' }}>
-            You did it in {moves} moves. That kind of quiet focus is a genuinely good reset.
+            {t('play.memory.winBody', { moves })}
           </p>
         </div>
       )}
       {!won && (
         <p className="tiny muted center" style={{ margin: '0.7rem 0 0' }}>
-          Flip two cards at a time and try to remember where each pair lives.
+          {t('play.memory.footer')}
         </p>
       )}
     </div>

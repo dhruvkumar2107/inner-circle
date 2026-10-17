@@ -1,0 +1,58 @@
+{
+  "mode": {
+    "label": "Mode",
+    "cpu": "vs computer",
+    "local": "two players (same device)"
+  },
+  "actions": {
+    "reset": "Reset",
+    "undo": "Undo",
+    "newGame": "New game"
+  },
+  "status": {
+    "yourTurn": "Your turn",
+    "computerTurn": "Computer is thinking…",
+    "whiteTurn": "White to move",
+    "blackTurn": "Black to move",
+    "check": "Check",
+    "checkmateYouWin": "Checkmate — you win",
+    "checkmateYouLose": "Checkmate — you lose",
+    "checkmateWhite": "Checkmate — White wins",
+    "checkmateBlack": "Checkmate — Black wins",
+    "stalemate": "Stalemate — it's a draw",
+    "draw": "Draw"
+  },
+  "side": {
+    "white": "White",
+    "black": "Black"
+  },
+  "captured": {
+    "white": "White has captured",
+    "black": "Black has captured",
+    "none": "None yet"
+  },
+  "promotion": {
+    "title": "Choose a piece to promote to",
+    "queen": "Queen",
+    "rook": "Rook",
+    "bishop": "Bishop",
+    "knight": "Knight",
+    "cancel": "Cancel"
+  },
+  "piece": {
+    "k": "King",
+    "q": "Queen",
+    "r": "Rook",
+    "b": "Bishop",
+    "n": "Knight",
+    "p": "Pawn"
+  },
+  "board": {
+    "label": "Chess board",
+    "square": "{{piece}}, {{side}}, {{square}}",
+    "emptySquare": "Empty square, {{square}}",
+    "selected": "selected",
+    "legalTarget": "legal move"
+  },
+  "hint": "Tap a piece, then tap a highlighted square to move it."
+}

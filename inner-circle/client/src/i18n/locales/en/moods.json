@@ -1,0 +1,60 @@
+{
+  "happy": "Happy",
+  "calm": "Calm",
+  "okay": "Okay",
+  "stressed": "Stressed",
+  "anxious": "Anxious",
+  "sad": "Sad",
+  "overwhelmed": "Overwhelmed",
+  "needs": {
+    "talk": "I want to talk",
+    "calm": "I want to calm down",
+    "distraction": "I want a distraction",
+    "understand": "I want to understand my feelings",
+    "professional": "I want professional support"
+  },
+  "suggestions": {
+    "stressed": {
+      "title": "Try a one-minute breathing reset",
+      "body": "A single quiet minute can soften the edges of a stressful day.",
+      "cta": "Start one-minute reset",
+      "alt": "Talk it through instead"
+    },
+    "anxious": {
+      "title": "Talk to your companion, or ground yourself",
+      "body": "The 5-4-3-2-1 grounding exercise is a gentle place to start.",
+      "cta": "Open AI companion",
+      "alt": "Try grounding"
+    },
+    "sad": {
+      "title": "A supportive conversation or a soft activity",
+      "body": "You do not have to explain everything — a few words are enough.",
+      "cta": "Talk to your companion",
+      "alt": "Explore a relaxing activity"
+    },
+    "overwhelmed": {
+      "title": "Break the day into smaller pieces",
+      "body": "A short pause first, then one small step at a time.",
+      "cta": "Take a short pause",
+      "alt": "Just a distraction"
+    },
+    "calm": {
+      "title": "Keep the good moment going",
+      "body": "Explore an activity, or simply carry on with your day.",
+      "cta": "Explore Play & Relax",
+      "alt": "Continue"
+    },
+    "happy": {
+      "title": "Record your positive moment",
+      "body": "Tiny wins add up — save this one in your mood journey.",
+      "cta": "Add a tiny win",
+      "alt": "Continue"
+    },
+    "okay": {
+      "title": "Choose whatever feels right",
+      "body": "A puzzle, a breathing break, or a chat — there is no wrong choice.",
+      "cta": "Open Play & Relax",
+      "alt": "Continue"
+    }
+  }
+}

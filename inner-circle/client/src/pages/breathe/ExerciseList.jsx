@@ -1,4 +1,5 @@
 import { Wind, RefreshCw, MapPin, HeartHandshake, Leaf, Clock } from 'lucide-react'
+import { useT } from '../../i18n'
 
 const ICONS = {
   Wind,
@@ -10,6 +11,7 @@ const ICONS = {
 }
 
 export default function ExerciseList({ exercises, activeKey, onSelect }) {
+  const t = useT()
   return (
     <div className="card card-pad exercise-list">
       {exercises.map((ex) => {
@@ -23,8 +25,8 @@ export default function ExerciseList({ exercises, activeKey, onSelect }) {
           >
             <Icon size={18} style={{ flex: 'none', marginTop: '2px' }} />
             <span>
-              <b>{ex.title}</b>
-              <small>{ex.short}</small>
+              <b>{t(ex.titleKey)}</b>
+              <small>{t(ex.shortKey)}</small>
             </span>
           </button>
         )

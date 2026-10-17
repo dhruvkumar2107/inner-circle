@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../../i18n'
 
 const ICONS = ['🌿', '🍃', '🌸', '🌙', '⭐', '☁️', '🕊️', '🌻']
 const FLIP_BACK_MS = 800
@@ -14,6 +15,7 @@ function buildDeck() {
 }
 
 export default function MemoryPuzzle({ onComplete }) {
+  const { t } = useI18n()
   const [deck, setDeck] = useState(buildDeck)
   const [flipped, setFlipped] = useState([])
   const [moves, setMoves] = useState(0)
@@ -64,10 +66,10 @@ export default function MemoryPuzzle({ onComplete }) {
   return (
     <div className="puzzle-view">
       <div className="puzzle-controls spread">
-        <span className="puzzle-stat">Moves: {moves}</span>
-        <button type="button" className="btn btn-outline btn-sm" onClick={restart}>New game</button>
+        <span className="puzzle-stat">{t('puzzles.memory.moves', { moves })}</span>
+        <button type="button" className="btn btn-outline btn-sm" onClick={restart}>{t('puzzles.memory.newGame')}</button>
       </div>
-      <div className="puzzle-board memory-grid" role="grid" aria-label="Memory game">
+      <div className="puzzle-board memory-grid" role="grid" aria-label={t('puzzles.memory.boardLabel')}>
         {deck.map((card, i) => {
           const shown = card.matched || flipped.includes(i)
           return (
@@ -76,14 +78,14 @@ export default function MemoryPuzzle({ onComplete }) {
               type="button"
               className={`tile-btn memory-tile ${shown ? 'memory-revealed' : ''} ${card.matched ? 'memory-matched' : ''}`}
               onClick={() => flip(i)}
-              aria-label={shown ? card.emoji : 'Hidden card'}
+              aria-label={shown ? card.emoji : t('puzzles.memory.hidden')}
             >
               {shown ? card.emoji : ''}
             </button>
           )
         })}
       </div>
-      {won && <div className="status-message">You matched all pairs in {moves} moves.</div>}
+      {won && <div className="status-message">{t('puzzles.memory.won', { moves })}</div>}
     </div>
   )
 }

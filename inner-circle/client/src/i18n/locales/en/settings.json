@@ -1,0 +1,102 @@
+{
+  "kicker": "SETTINGS",
+  "title": "Your space, your rules",
+  "sub": "Adjust how Inner Circle supports you. None of these choices are permanent.",
+  "language": "Language",
+  "languageHint": "This choice applies across the whole app — every screen follows the language you pick here.",
+  "profile": {
+    "title": "Your profile",
+    "sub": "Read-only details from the demo profile stored on this device.",
+    "name": "Name",
+    "email": "Email",
+    "age": "Age",
+    "university": "University",
+    "memberSince": "Member since",
+    "researchNote": "You have chosen to contribute anonymised research feedback — turn it off under Consent below.",
+    "passwordNote": "Your password is kept only as a demo hash in this browser. It is never shown here and never sent anywhere."
+  },
+  "consent": {
+    "title": "Consent",
+    "sub": "What you agreed to, and what you can change.",
+    "terms": "Terms & privacy accepted",
+    "termsHint": "Required once when the demo profile was created.",
+    "termsMissing": "Not recorded on this device",
+    "research": "Contribute anonymised research feedback",
+    "researchHint": "In a real deployment this would let the university study de-identified, anonymised well-being patterns. In this prototype it only stores your choice in this browser."
+  },
+  "prefs": {
+    "title": "Preferences",
+    "sub": "Small switches for how the app behaves.",
+    "tts": "Read companion replies aloud",
+    "ttsHint": "Your browser speaks each reply as it arrives. Everything is still written out in full.",
+    "voice": "Spoken guidance in breathing exercises",
+    "voiceHint": "Steps such as inhale, hold and exhale are spoken while you follow along.",
+    "ttsOn": "Companion replies will be read aloud.",
+    "ttsOff": "Companion replies will stay quiet.",
+    "voiceOn": "Spoken guidance in breathing exercises is on.",
+    "voiceOff": "Spoken guidance in breathing exercises is off."
+  },
+  "reminders": {
+    "title": "Daily check-in reminder",
+    "sub": "An optional, gentle nudge to note how you feel.",
+    "toggle": "Daily mood check-in reminder",
+    "toggleHint": "Gentle, private and completely optional — turn it off any time.",
+    "time": "Reminder time",
+    "timeHint": "We'll only nudge you after this time, and at most once a day.",
+    "onlyWhileOpen": "This only works while Inner Circle is open in this browser. There is no push, so a closed browser means no reminder — and that is completely okay.",
+    "enable": "Enable notifications",
+    "enableHint": "Allow your browser to show the reminder outside the app window.",
+    "permissionLabel": "Notification permission",
+    "permission": {
+      "granted": "Allowed",
+      "denied": "Blocked in browser settings",
+      "default": "Not yet allowed",
+      "unsupported": "Not supported by this browser"
+    },
+    "onToast": "Daily check-in reminder is on.",
+    "offToast": "Daily check-in reminder is off.",
+    "grantedToast": "Notifications are allowed. Thank you.",
+    "deniedToast": "Notifications stay off. The reminder will show inside the app instead.",
+    "unsupportedToast": "This browser cannot show notifications. The reminder will show inside the app instead.",
+    "notifyTitle": "Inner Circle",
+    "notifyBody": "Whenever you have a moment, a gentle check-in is here. No pressure.",
+    "toastBody": "A gentle check-in for today, whenever you are ready. No pressure."
+  },
+  "data": {
+    "title": "Your data & privacy",
+    "sub": "Everything stays in this browser.",
+    "bulletLocal": "Everything lives in this browser's local storage, under Inner Circle keys such as ic.profile and ic.moods.",
+    "bulletUpload": "Nothing is uploaded — this prototype has no server.",
+    "bulletExport": "Export a copy or delete it all, whenever you like.",
+    "export": "Export my data",
+    "delete": "Delete all my data",
+    "exportToast": "Your data was exported as a JSON file."
+  },
+  "account": {
+    "title": "Account",
+    "signOut": "Sign out",
+    "signOutHint": "Signing out removes the demo profile from this device. The rest of your data stays until you delete it."
+  },
+  "footerNote": "Inner Circle is a well-being and screening prototype, not medical care. It never diagnoses, never prescribes, and it is not an emergency service.",
+  "toasts": {
+    "researchOn": "Research feedback turned on (demo).",
+    "researchOff": "Research feedback turned off.",
+    "deleted": "All local data deleted."
+  },
+  "deleteModal": {
+    "kicker": "THIS CANNOT BE UNDONE",
+    "title": "Delete all your local data?",
+    "intro": "This removes everything below from this device only:",
+    "items": {
+      "profile": "Your demo profile — name, email, age and university",
+      "consents": "Your terms and research consents",
+      "prefs": "Your preferences",
+      "moods": "Mood check-ins, journal entries and tiny wins",
+      "screening": "Screening records and the companion conversation",
+      "appointments": "Saved appointment requests"
+    },
+    "foot": "Nothing is kept on a server, so there is nothing else to clear. This cannot be undone.",
+    "confirm": "Yes, delete everything",
+    "keep": "Keep my data"
+  }
+}

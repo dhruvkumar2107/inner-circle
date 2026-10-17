@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useI18n } from '../../i18n'
 
 const GRID_SIZE = 9
 const EMPTY = 0
@@ -44,6 +45,7 @@ function canPlace(grid, piece, dr, dc) {
 }
 
 export default function BlockPuzzle({ onComplete }) {
+  const { t } = useI18n()
   const [grid, setGrid] = useState(() => Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(EMPTY)))
   const [pieces, setPieces] = useState(() => getRandomPieces(3))
   const [score, setScore] = useState(0)
@@ -132,17 +134,17 @@ export default function BlockPuzzle({ onComplete }) {
     <div className="puzzle-view">
       <div className="puzzle-controls spread">
         <div className="puzzle-controls">
-          <span className="puzzle-stat">Score: {score}</span>
-          {gameOver && <span className="error-message">No moves left</span>}
+          <span className="puzzle-stat">{t('puzzles.block.stat', { score })}</span>
+          {gameOver && <span className="error-message">{t('puzzles.block.noMoves')}</span>}
         </div>
         <div className="puzzle-controls">
           <button type="button" className="btn btn-ghost btn-sm" onClick={newGame}>
-            New game
+            {t('puzzles.block.newGame')}
           </button>
         </div>
       </div>
 
-      <div className="puzzle-board block-grid" role="grid" aria-label="Block puzzle board">
+      <div className="puzzle-board block-grid" role="grid" aria-label={t('puzzles.block.boardLabel')}>
         {Array(GRID_SIZE * GRID_SIZE).fill().map((_, i) => {
           const r = Math.floor(i / GRID_SIZE), c = i % GRID_SIZE
           const filled = grid[r][c] === FILLED
@@ -153,7 +155,7 @@ export default function BlockPuzzle({ onComplete }) {
               type="button"
               className={`tile-btn ${filled ? 'filled' : ''} ${valid ? 'valid' : ''}`}
               onClick={() => handleCellClick(r, c)}
-              aria-label={`Cell ${r+1},${c+1}`}
+              aria-label={t('puzzles.block.cellLabel', { row: r + 1, col: c + 1 })}
               disabled={gameOver}
             />
           )
@@ -169,11 +171,11 @@ export default function BlockPuzzle({ onComplete }) {
             onClick={() => setSelected(selected === idx ? null : idx)}
             disabled={gameOver}
           >
-            Piece {idx + 1} ({piece.cells.length} cells)
+            {t('puzzles.block.piece', { n: idx + 1, cells: piece.cells.length })}
           </button>
         ))}
       </div>
-      <p className="puzzle-hint">Click a piece, then a valid cell to place. Complete rows/columns to clear.</p>
+      <p className="puzzle-hint">{t('puzzles.block.hint')}</p>
     </div>
   )
 }

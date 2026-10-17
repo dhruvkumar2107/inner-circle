@@ -1,0 +1,152 @@
+{
+  "header": {
+    "kicker": "ACTIVITIES",
+    "title": "Play & Relax",
+    "sub": "A calm activity corner — take a break, then get on with your day."
+  },
+  "note": "These activities are here for a gentle pause or a bit of distraction. They are not treatment and they do not cure anything — if things feel heavy, please talk to someone you trust or reach out for professional support.",
+  "sections": {
+    "games": {
+      "title": "Mini-games",
+      "sub": "Light distractions for when you need a few minutes away from everything."
+    },
+    "relax": {
+      "title": "Relaxing activities",
+      "sub": "Quieter ways to slow down for a moment."
+    }
+  },
+  "kicker": {
+    "miniGame": "MINI-GAME",
+    "relax": "RELAX"
+  },
+  "buttons": {
+    "open": "Open"
+  },
+  "best": {
+    "moves": "Best: {{value}} moves",
+    "score": "Best: {{value}}"
+  },
+  "footerNote": "Everything here runs only on this device. Scores are just for fun — there is nothing to lose and no reason to rush.",
+  "games": {
+    "runner": { "title": "Endless runner", "body": "Hop a little round friend over soft bushes. Your score climbs with distance." },
+    "match": { "title": "Match-three", "body": "Swap neighbouring tiles to line up three or more, all in calm colours." },
+    "memory": { "title": "Memory match", "body": "Find all eight pairs on a 4×4 board. Slow and steady absolutely counts." },
+    "focus": { "title": "Focus reaction", "body": "A 20-second round of soft targets. Tap them as they drift in — no rush." },
+    "colour": { "title": "Colouring canvas", "body": "Colour a blank page with the Inner Circle palette. No skill required." },
+    "jar": { "title": "Calm jar", "body": "Shake the jar and watch the glitter settle — like thoughts settling too." },
+    "mindful": { "title": "Short mindfulness", "body": "Three tiny prompts — sounds, contact, breath. About one quiet minute." },
+    "moment": { "title": "Positive moment", "body": "Write down one good thing and keep it in your mood journey." }
+  },
+  "hud": {
+    "score": "Score",
+    "best": "Best",
+    "moves": "Moves",
+    "pairs": "Pairs",
+    "fewest": "Fewest",
+    "time": "Time"
+  },
+  "toast": {
+    "niceWork": "Nice work taking a moment for yourself.",
+    "chain": "Nice chain — they keep falling into place.",
+    "foundAll": "You found every pair — lovely focus. Nice work taking a moment for yourself.",
+    "freshPage": "Fresh page — nice work taking a moment for yourself.",
+    "settled": "Watched it settle — nice work taking a moment for yourself."
+  },
+  "runner": {
+    "jumpHint": "Space / tap to jump",
+    "canvasLabel": "Endless runner: a small round character jumping over bushes",
+    "readyTitle": "A gentle hop",
+    "readyBody": "Press Space or tap to jump over the bushes. No pressure — go as far as you like.",
+    "overTitle": "That was a nice run",
+    "overNewBest": "You covered {{score}} points — a new best!",
+    "overBest": "You covered {{score}} points · best {{best}}.",
+    "overHint": "Take a breath, then go again whenever you're ready.",
+    "restart": "Restart",
+    "footer": "Space, Arrow Up or a tap to jump. The speed picks up a little as you go."
+  },
+  "match": {
+    "newGame": "New game",
+    "boardLabel": "Match-three board, 6 by 6",
+    "tileLabel": "Tile row {{row}} column {{col}}",
+    "tileSelected": ", selected",
+    "footer": "Tap a tile, then an adjacent one to swap. Lines of three or more clear and new tiles fall in."
+  },
+  "memory": {
+    "newGame": "New game",
+    "cardOpen": "Card {{n}}, {{emoji}}",
+    "cardDown": "Card {{n}}, face down",
+    "winTitle": "All eight pairs found",
+    "winBody": "You did it in {{moves}} moves. That kind of quiet focus is a genuinely good reset.",
+    "footer": "Flip two cards at a time and try to remember where each pair lives."
+  },
+  "focus": {
+    "endEarly": "End early",
+    "targetLabel": "Soft target, click for a point",
+    "readyTitle": "Soft focus, 20 seconds",
+    "readyBody": "Gentle targets drift in — tap them for a point. Nothing flashes, nothing is lost.",
+    "overTitle": "Round complete",
+    "overNewBest": "You caught {{score}} targets — a new best!",
+    "overBest": "You caught {{score}} targets · best {{best}}.",
+    "playAgain": "Play again",
+    "footer": "A short, gentle round — just tap whatever appears. Stop whenever you like."
+  },
+  "colour": {
+    "swatches": { "sage": "Sage", "mint": "Mint", "cream": "Cream", "sky": "Sky", "amber": "Amber", "rose": "Rose" },
+    "brushes": { "thin": "Thin", "medium": "Medium", "thick": "Thick" },
+    "colours": "Colours",
+    "brushSize": "Brush size",
+    "eraser": "Eraser",
+    "clear": "Clear",
+    "canvasLabel": "Drawing canvas",
+    "swatchLabel": "{{name}} colour",
+    "footer": "Draw with a mouse, finger or stylus. There is no wrong way to fill the page."
+  },
+  "jar": {
+    "shaking": "Swirling around…",
+    "settling": "Settling, nice and slowly…",
+    "rest": "All settled. Shake it whenever you need a pause.",
+    "shake": "Shake the jar",
+    "footer": "Watch the glitter drift down and find its rest — like thoughts settling on their own."
+  },
+  "mindful": {
+    "stepOf": "Step {{step}} of {{total}}",
+    "steps": {
+      "0": {
+        "title": "Notice three things you can hear",
+        "body": "Wherever you are right now, let your ears do a little work. One near sound, one further away, and one you had not noticed until this moment.",
+        "cue": "You do not need to name them perfectly — just let them arrive."
+      },
+      "1": {
+        "title": "Feel two points of contact",
+        "body": "Notice your feet resting on the floor, and your back or shoulders touching the chair. Let those points hold you for a few slow seconds.",
+        "cue": "Nothing to fix. Just two places where the world is holding you up."
+      },
+      "2": {
+        "title": "Take one unhurried breath",
+        "body": "Breathe in gently, and let the out-breath be a little longer than the in-breath. Once is enough. Twice, if it feels nice.",
+        "cue": "That is the whole exercise — short, quiet, and entirely yours."
+      }
+    },
+    "doneTitle": "That is your pause, complete",
+    "doneBody": "Three small steps, about a minute of your day. You showed up for yourself — that genuinely counts. Come back whenever the day feels loud.",
+    "again": "Do it again"
+  },
+  "moment": {
+    "prompts": {
+      "0": "A friend messaged at the right moment…",
+      "1": "I finished something I had been putting off…",
+      "2": "The weather felt good on a walk…",
+      "3": "I was kind to myself, just once…"
+    },
+    "intro": "What is one small good thing from today? It can be tiny — a sip of good chai, a song, a message that landed well.",
+    "error": "Write a line or two — even a few words are enough.",
+    "label": "Your positive moment",
+    "placeholder": "Today, something good was…",
+    "save": "Save this moment",
+    "clear": "Clear",
+    "savedTitle": "Nice work taking a moment for yourself",
+    "savedBody": "Your moment is saved to your mood journey. Small good things are worth writing down — they add up more than we expect.",
+    "addAnother": "Add another",
+    "footer": "Saved only in this browser, alongside your other tiny wins."
+  }
+}

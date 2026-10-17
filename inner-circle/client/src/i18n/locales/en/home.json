@@ -1,0 +1,66 @@
+{
+  "kicker": {
+    "morning": "Good morning",
+    "afternoon": "Good afternoon",
+    "evening": "Good evening"
+  },
+  "title": "Hi {{name}}, welcome to Inner Circle 🌿",
+  "lead": "How are you feeling today?",
+  "sub": "You don't have to figure everything out at once. Take a moment for yourself.",
+  "checkin": {
+    "title": "How are you feeling today?",
+    "subDone": "You have already checked in today — you can change it any time.",
+    "subNew": "Pick whatever feels closest. Nothing is wrong.",
+    "aria": "Daily mood check-in"
+  },
+  "note": {
+    "thanks": "Thanks for checking in with yourself.",
+    "question": "What would help you right now?",
+    "tiny": "A mood is a moment, not a verdict — it never defines your mental health on its own."
+  },
+  "maybeLater": "Maybe later",
+  "orPrefix": "Or:",
+  "recordedAs": "Recorded for today as",
+  "showSuggestion": "Show a suggestion",
+  "chat": {
+    "title": "Talk to your AI companion",
+    "body": "Type or speak — a supportive conversation, whenever you want it. No topic is too small.",
+    "cta": "Open chat"
+  },
+  "cards": {
+    "minute": {
+      "title": "One-Minute Reset",
+      "body": "A single quiet minute with a breathing circle.",
+      "cta": "Start"
+    },
+    "play": {
+      "title": "Play & Relax",
+      "body": "Gentle mini-games and calming activities.",
+      "cta": "Open"
+    },
+    "checkin": {
+      "title": "Mental Health Check-in",
+      "body": "PHQ-9 and GAD-7 screening, whenever you choose.",
+      "cta": "View"
+    },
+    "mood": {
+      "title": "My Mood Journey",
+      "body": "Your check-ins, tiny wins and reflections.",
+      "cta": "View"
+    },
+    "pro": {
+      "title": "Contact a Professional",
+      "body": "Department of Psychiatry, Dayananda Sagar University.",
+      "cta": "Get support"
+    }
+  },
+  "sentiment": {
+    "title": "Sentiment analysis",
+    "body": "Every message you send to the companion is analysed for emotional tone — see it working on the chat page.",
+    "cta": "See how it works"
+  },
+  "disclaimer": {
+    "pre": "Inner Circle offers screening, support and a route to professional help. It does not diagnose or prescribe, and it is not an emergency service — use ",
+    "post": " if you may be in danger."
+  }
+}

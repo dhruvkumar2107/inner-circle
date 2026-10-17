@@ -1,0 +1,149 @@
+{
+  "hero": {
+    "title": "A quiet space for students to check in with themselves.",
+    "body": "Talk to a supportive companion, understand how you feel with recognised screening tools, unwind with calm activities, and reach real people when you need them.",
+    "points": {
+      "supportiveTitle": "Supportive, not clinical.",
+      "supportiveBody": "Screening tools and an AI companion that never pretends to be a doctor.",
+      "privateTitle": "Private by design.",
+      "privateBody": "This prototype stores everything in your browser only.",
+      "neverTitle": "Never forced.",
+      "neverBody": "No questionnaire is required before you explore the app."
+    },
+    "collab": "In collaboration with the Department of Psychiatry, Dayananda Sagar University."
+  },
+  "kicker": {
+    "register": "Create your account",
+    "signin": "Welcome back"
+  },
+  "heading": {
+    "register": "Register",
+    "signin": "Sign in"
+  },
+  "sub": {
+    "register": "A short form — then you go straight to your home page.",
+    "signin": "Sign in to the demo profile saved on this device."
+  },
+  "fields": {
+    "name": "Full name",
+    "age": "Age",
+    "ageHint": "18 or above",
+    "university": "University",
+    "email": "Email ID",
+    "password": "Password",
+    "confirm": "Confirm password"
+  },
+  "placeholders": {
+    "university": "Your university",
+    "passwordNew": "At least 8 characters",
+    "passwordExisting": "Your password",
+    "confirm": "Type it again"
+  },
+  "aria": {
+    "hidePassword": "Hide password",
+    "showPassword": "Show password"
+  },
+  "consent": {
+    "terms": "I have read and agree to the {{terms}} and the {{privacy}}.",
+    "termsLink": "Terms and Conditions",
+    "privacyLink": "Privacy Notice",
+    "research": "Optional: I agree that my {{bold}} data may be used for wellbeing research. This is separate from the Terms and is not required to use Inner Circle.",
+    "researchBold": "anonymised, de-identified"
+  },
+  "submit": {
+    "register": "Register",
+    "signin": "Sign in"
+  },
+  "alt": {
+    "haveAccount": "Already registered on this device?",
+    "signin": "Sign in",
+    "fillDemo": "Fill demo details",
+    "newHere": "New here?",
+    "createAccount": "Create an account",
+    "continueAs": "Continue as {{name}}"
+  },
+  "demoNote": "Demo prototype — no real sensitive data is collected or transmitted.",
+  "toast": {
+    "welcome": "Welcome to Inner Circle 🌿",
+    "welcomeBack": "Welcome back 🌿"
+  },
+  "errors": {
+    "name": "Please enter your full name.",
+    "ageRequired": "Please enter your age so we can confirm eligibility.",
+    "ageMin": "Registration is currently available only to users aged 18 or above. Please come back when you are 18, or explore the public resources on the Department of Psychiatry page.",
+    "ageInvalid": "Please enter a valid age.",
+    "university": "Please enter your university name.",
+    "email": "Please enter a valid email address.",
+    "password": "Please use a password of at least 8 characters.",
+    "passwordMismatch": "The two passwords do not match.",
+    "terms": "Please accept the Terms and Conditions to create your account.",
+    "noAccount": "No demo account on this device yet. Please register first.",
+    "emailNotRegistered": "That email is not registered on this device.",
+    "passwordNoMatch": "That password does not match the demo account."
+  },
+  "terms": {
+    "kicker": "PLEASE READ",
+    "title": "Terms & Conditions",
+    "note": "Written in plain language on purpose. In short: your information supports {{bold}}, is never sold, and the AI is not a substitute for a professional.",
+    "noteBold": "you",
+    "understand": "I understand",
+    "footnote": "Accepting the Terms is required. Optional research consent is asked separately below the checkbox and can be changed later in Settings & Privacy.",
+    "sections": {
+      "s1": {
+        "title": "1. What information Inner Circle collects",
+        "body": "Your name, age, university, email address and the entries you choose to make — mood check-ins, journal notes, tiny wins, screening answers and your conversations with the companion. You choose what to share; nothing is compulsory except the basics needed to create an account."
+      },
+      "s2": {
+        "title": "2. Why we need it",
+        "body": "To create your account, remember your check-ins, show your mood journey over time, and personalise the activities and support we suggest. We ask for your age because registration is currently open only to users aged 18 and above."
+      },
+      "s3": {
+        "title": "3. Sensitive information about your well-being",
+        "body": "You may choose to share information about your mental well-being, including screening answers and what you tell the companion. This is sensitive. It is used only to support you inside Inner Circle, and you can delete it at any time from Settings & Privacy."
+      },
+      "s4": {
+        "title": "4. How your messages and answers may be processed",
+        "body": "Your messages are analysed for emotional tone (sentiment and emotion analysis) so the companion can respond appropriately and suggest relevant activities. Screening answers are scored and then interpreted by our fuzzy-logic support engine to produce an illustrative level of reported symptoms. In this prototype the analysis runs inside your browser and responses are simulated."
+      },
+      "s5": {
+        "title": "5. How information is protected, and who can access it",
+        "body": "In this prototype your data stays in this browser and is not sent to any server. In a deployed version, information would be stored with access controls, secure transmission and data minimisation, and would be visible only to you. No doctor or intern can read your conversations by default."
+      },
+      "s6": {
+        "title": "6. When information may be shared",
+        "body": "Information would be shared with authorised professionals only (a) when you ask for professional support and explicitly consent to sharing the relevant part of your record, or (b) when there is a clear and serious safety concern and sharing is necessary to protect you or someone else. In that situation we would tell you wherever possible. Otherwise nothing is shared."
+      },
+      "s7": {
+        "title": "7. The AI is not a doctor",
+        "body": "Inner Circle provides supportive conversation, self-help activities and screening tools. It does not diagnose, does not prescribe and is not a replacement for a qualified mental health professional. Always consult a qualified professional for medical advice."
+      },
+      "s8": {
+        "title": "8. Accessing and deleting your information",
+        "body": "You can review your saved profile, check-ins, screening records and conversations in Settings & Privacy, and you can delete any of it — or your whole demo profile — from the same page at any time."
+      }
+    }
+  },
+  "privacy": {
+    "kicker": "YOUR DATA",
+    "title": "Privacy Notice",
+    "footnote": "Contact routes, retention rules and the review of this notice with the Department of Psychiatry, Dayananda Sagar University are pending institutional approval.",
+    "sections": {
+      "p1": {
+        "title": "Data stored in this prototype",
+        "body": "Everything lives in this browser's local storage under the Inner Circle keys: your demo profile, mood check-ins, journal entries, tiny wins, screening records and companion messages. Nothing is transmitted to a server."
+      },
+      "p2": {
+        "title": "What a real deployment would require",
+        "body": "Encryption in transit and at rest, role-based access control, retention limits, a reviewed privacy policy, audit logging for any professional access, and explicit authorisation before any data is shared with the Department of Psychiatry, Dayananda Sagar University."
+      },
+      "p3": {
+        "title": "Your controls",
+        "body": "Export is simulated in this prototype; deletion works immediately. Optional research consent is separate from accepting the Terms and can be changed at any time."
+      },
+      "p4": {
+        "title": "Voice input",
+        "body": "If you use the microphone, your browser converts speech to text. This app does not record audio continuously and does not send recordings to any external service of its own."
+      }
+    }
+  }
+}

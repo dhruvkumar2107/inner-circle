@@ -1,0 +1,95 @@
+{
+  "header": {
+    "kicker": "BRAIN ACTIVITIES",
+    "title": "Puzzles",
+    "sub": "Quiet mental exercises — play one, or come back later."
+  },
+  "kicker": {
+    "activity": "BRAIN ACTIVITY"
+  },
+  "play": "Play",
+  "toast": {
+    "niceWork": "Nice work taking a moment for yourself."
+  },
+  "note": "These puzzles are here for a calm pause. They are not treatment — take your time, and there is nothing to prove.",
+  "activities": {
+    "block": { "title": "Block puzzle", "body": "Drop simple shapes onto a 9x9 board and clear full rows and columns." },
+    "sudoku": { "title": "Sudoku", "body": "A gentle 9x9 puzzle with a fresh grid each time and a check button." },
+    "wordsearch": { "title": "Word search", "body": "Find eight calm, study-themed words hidden in a 12x12 grid." },
+    "jigsaw": { "title": "Jigsaw", "body": "Swap the tiles of a soothing picture until it all comes together." },
+    "riddles": { "title": "Riddles", "body": "Five little riddles to turn over, with hints whenever you like." },
+    "memory": { "title": "Memory puzzles", "body": "Match the calming pairs on a 4x4 board at your own pace." }
+  },
+  "chessCard": {
+    "title": "Chess",
+    "subtitle": "A friendly game of chess — take your time, there is no clock."
+  },
+  "block": {
+    "stat": "Score: {{score}}",
+    "noMoves": "No moves left",
+    "newGame": "New game",
+    "boardLabel": "Block puzzle board",
+    "cellLabel": "Cell {{row}},{{col}}",
+    "piece": "Piece {{n}} ({{cells}} cells)",
+    "hint": "Click a piece, then a valid cell to place. Complete rows/columns to clear."
+  },
+  "sudoku": {
+    "newPuzzle": "New puzzle",
+    "check": "Check",
+    "clear": "Clear",
+    "correct": "Correct: {{n}}",
+    "boardLabel": "Sudoku board",
+    "cellLabel": "Cell {{row}},{{col}}",
+    "hint": "Click cell, then number. Check compares against solution."
+  },
+  "wordSearch": {
+    "words": {
+      "0": "CALM",
+      "1": "FOCUS",
+      "2": "BREATHE",
+      "3": "GENTLE",
+      "4": "STEADY",
+      "5": "LISTEN",
+      "6": "REFLECT",
+      "7": "RESET"
+    },
+    "fill": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "found": "Found: {{found}}/{{total}}",
+    "newPuzzle": "New puzzle",
+    "allFound": "All words found",
+    "gridLabel": "Word search grid",
+    "letterLabel": "Letter {{letter}}",
+    "hint": "Click the first letter, then the last letter of a word along a straight line."
+  },
+  "jigsaw": {
+    "moves": "Moves: {{moves}}",
+    "newPuzzle": "New puzzle",
+    "solved": "Solved",
+    "tileLabel": "Tile {{n}}",
+    "hint": "Click two tiles to swap. Arrange to form the picture."
+  },
+  "riddles": {
+    "0": { "question": "What gets wetter as it dries?", "answer": "a towel", "choices": ["a towel", "a rock", "a leaf"] },
+    "1": { "question": "What has to be broken before you can use it?", "answer": "an egg", "choices": ["an egg", "a box", "a key"] },
+    "2": { "question": "The more you take, the more you leave behind. What are they?", "answer": "footsteps", "choices": ["footsteps", "bubbles", "shadows"] },
+    "3": { "question": "What can fill a room but takes no space?", "answer": "light", "choices": ["light", "air", "dust"] },
+    "4": { "question": "What goes up but never comes down?", "answer": "age", "choices": ["age", "smoke", "rain"] }
+  },
+  "riddleGame": {
+    "stat": "Riddle {{n}}/{{total}} • Score {{score}}",
+    "scoreStat": "Score {{score}}/{{total}}",
+    "restart": "Restart",
+    "hintButton": "Hint",
+    "reveal": "Reveal answer",
+    "check": "Check answer",
+    "hint": "Think gently about the common answer.",
+    "done": "Great job! You got {{score}}/{{total}}"
+  },
+  "memory": {
+    "moves": "Moves: {{moves}}",
+    "newGame": "New game",
+    "boardLabel": "Memory game",
+    "hidden": "Hidden card",
+    "won": "You matched all pairs in {{moves}} moves."
+  }
+}

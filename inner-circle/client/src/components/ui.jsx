@@ -1,14 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertCircle, HeartHandshake, Leaf, Loader2, Sprout, X } from 'lucide-react'
+import { useT } from '../i18n'
 
 export function Brand({ compact = false }) {
+  const t = useT()
   return (
     <div className={`brand ${compact ? 'brand-compact' : ''}`}>
       <span className="brand-mark" aria-hidden="true"><LeafMark size={20} /></span>
       <span className="brand-text">
         <b>Inner Circle</b>
-        {!compact && <small>a quiet space for students</small>}
+        {!compact && <small>{t('common.brandTagline')}</small>}
       </span>
     </div>
   )
@@ -117,6 +119,7 @@ export function EmptyState({ icon: Icon = Sprout, title, children, action }) {
 }
 
 export function ErrorBanner({ message, onRetry }) {
+  const t = useT()
   if (!message) return null
   return (
     <div className="error-banner" role="alert">
@@ -124,7 +127,7 @@ export function ErrorBanner({ message, onRetry }) {
       <span>{message}</span>
       {onRetry && (
         <button type="button" className="btn btn-ghost btn-sm" onClick={onRetry} style={{ marginLeft: 'auto' }}>
-          Try again
+          {t('common.tryAgain')}
         </button>
       )}
     </div>
@@ -132,6 +135,7 @@ export function ErrorBanner({ message, onRetry }) {
 }
 
 export function Modal({ title, kicker, onClose, children, footer, wide = false, hideClose = false }) {
+  const t = useT()
   const ref = useRef(null)
   useEffect(() => {
     const onKey = (event) => {
@@ -150,7 +154,7 @@ export function Modal({ title, kicker, onClose, children, footer, wide = false, 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && onClose) onClose() }}>
       <section className={`modal-card ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref}>
-        {!hideClose && <button type="button" className="modal-close" onClick={onClose} aria-label="Close"><X size={17} /></button>}
+        {!hideClose && <button type="button" className="modal-close" onClick={onClose} aria-label={t('common.close')}><X size={17} /></button>}
         <div className="modal-head">
           {kicker && <span className="kicker">{kicker}</span>}
           {title && <h2>{title}</h2>}
@@ -162,10 +166,11 @@ export function Modal({ title, kicker, onClose, children, footer, wide = false, 
   )
 }
 
+/** Helpline entries are keyed so each language file supplies its own wording. */
 export const CRISIS_RESOURCES = [
-  { label: 'Tele-MANAS', number: '14416', detail: 'India · 24×7 mental-health helpline' },
-  { label: 'KIRAN helpline', number: '1800-599-0019', detail: 'Government mental-health support' },
-  { label: 'Emergency services', number: '112', detail: 'If you may be in immediate danger right now' },
+  { key: 'teleManas', number: '14416' },
+  { key: 'kiran', number: '1800-599-0019' },
+  { key: 'emergency', number: '112' },
 ]
 
 /**
@@ -174,38 +179,34 @@ export const CRISIS_RESOURCES = [
  * companion when it detects crisis language.
  */
 export function SafetyModal({ onClose, trigger = 'manual' }) {
+  const t = useT()
   return (
     <Modal
-      kicker="YOU DON'T HAVE TO BE ALONE"
-      title="Let's find the right support, right now."
+      kicker={t('common.safety.kicker')}
+      title={t('common.safety.title')}
       onClose={onClose}
       footer={(
         <>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>I'm safe for now — continue</button>
-          <Link className="btn btn-outline" to="/professional" onClick={onClose}>Department contact</Link>
+          <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>{t('common.safety.safeContinue')}</button>
+          <Link className="btn btn-outline" to="/professional" onClick={onClose}>{t('common.safety.deptContact')}</Link>
         </>
       )}
     >
       <p className="small" style={{ color: 'var(--ink-2)' }}>
-        {trigger === 'assessment'
-          ? 'You indicated something on a safety-sensitive question, and that matters. Inner Circle is not monitored around the clock, so please reach out to a person directly.'
-          : 'If you may be in immediate danger, contact emergency services or someone you trust now. Inner Circle is not an emergency service and is not monitored continuously.'}
+        {trigger === 'assessment' ? t('common.safety.bodyAssessment') : t('common.safety.bodyManual')}
       </p>
       <div className="crisis-options">
         {CRISIS_RESOURCES.map((item) => (
           <a key={item.number} href={`tel:${item.number.replace(/[^0-9+]/g, '')}`}>
             <span className="crisis-icon"><HeartHandshake size={16} /></span>
             <span className="crisis-copy">
-              <b>{item.label}</b>
-              <small>{item.number} · {item.detail}</small>
+              <b>{t(`common.safety.resources.${item.key}.label`)}</b>
+              <small>{item.number} · {t(`common.safety.resources.${item.key}.detail`)}</small>
             </span>
           </a>
         ))}
       </div>
-      <p className="verify-note">
-        Prototype numbers for India — verify every number, the campus counselling contact and the
-        Department of Psychiatry details before launch.
-      </p>
+      <p className="verify-note">{t('common.safety.verifyNote')}</p>
     </Modal>
   )
 }

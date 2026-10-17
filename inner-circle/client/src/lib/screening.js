@@ -7,21 +7,22 @@
  * the *level of reported symptoms in the screening*, never a condition.
  */
 
-export const PHQ9_INTRO = 'Over the last 2 weeks, how often have you been bothered by the following problems?'
-export const GAD7_INTRO = 'Over the last 2 weeks, how often have you been bothered by the following problems?'
+export const PHQ9_INTRO_KEY = 'screening.intro'
+export const GAD7_INTRO_KEY = 'screening.intro'
+export const INSTRUMENT_NOTE_KEY = 'screening.instrumentNote'
 
 export const RESPONSES = [
-  { value: 0, label: 'Not at all' },
-  { value: 1, label: 'Several days' },
-  { value: 2, label: 'More than half the days' },
-  { value: 3, label: 'Nearly every day' },
+  { value: 0, labelKey: 'screening.responses.notAtAll' },
+  { value: 1, labelKey: 'screening.responses.severalDays' },
+  { value: 2, labelKey: 'screening.responses.moreThanHalf' },
+  { value: 3, labelKey: 'screening.responses.nearlyEveryDay' },
 ]
 
 export const DIFFICULTY_RESPONSES = [
-  { value: 0, label: 'Not difficult at all' },
-  { value: 1, label: 'Somewhat difficult' },
-  { value: 2, label: 'Very difficult' },
-  { value: 3, label: 'Extremely difficult' },
+  { value: 0, labelKey: 'screening.difficulty.notAtAll' },
+  { value: 1, labelKey: 'screening.difficulty.somewhat' },
+  { value: 2, labelKey: 'screening.difficulty.very' },
+  { value: 3, labelKey: 'screening.difficulty.extremely' },
 ]
 
 export const PHQ9_ITEMS = [
@@ -54,19 +55,26 @@ export const PHQ9_SAFETY_INDEX = 8
 
 export const scoreOf = (answers) => answers.reduce((sum, value) => sum + (Number(value) || 0), 0)
 
+const severity = (level, tone) => ({
+  level,
+  tone,
+  labelKey: `screening.severity.${level}.label`,
+  shortKey: `screening.severity.${level}.short`,
+})
+
 export const phq9Severity = (score) => {
-  if (score <= 4) return { label: 'Minimal reported symptoms', short: 'Minimal', tone: 'low' }
-  if (score <= 9) return { label: 'Mild reported symptoms', short: 'Mild', tone: 'low' }
-  if (score <= 14) return { label: 'Moderate reported symptoms', short: 'Moderate', tone: 'mid' }
-  if (score <= 19) return { label: 'Moderately severe reported symptoms', short: 'Moderately severe', tone: 'mid' }
-  return { label: 'Severe reported symptoms', short: 'Severe', tone: 'high' }
+  if (score <= 4) return severity('minimal', 'low')
+  if (score <= 9) return severity('mild', 'low')
+  if (score <= 14) return severity('moderate', 'mid')
+  if (score <= 19) return severity('moderatelySevere', 'mid')
+  return severity('severe', 'high')
 }
 
 export const gad7Severity = (score) => {
-  if (score <= 4) return { label: 'Minimal reported symptoms', short: 'Minimal', tone: 'low' }
-  if (score <= 9) return { label: 'Mild reported symptoms', short: 'Mild', tone: 'low' }
-  if (score <= 14) return { label: 'Moderate reported symptoms', short: 'Moderate', tone: 'mid' }
-  return { label: 'Severe reported symptoms', short: 'Severe', tone: 'high' }
+  if (score <= 4) return severity('minimal', 'low')
+  if (score <= 9) return severity('mild', 'low')
+  if (score <= 14) return severity('moderate', 'mid')
+  return severity('severe', 'high')
 }
 
 export const severityFor = (type, score) => (type === 'phq9' ? phq9Severity(score) : gad7Severity(score))
@@ -77,5 +85,4 @@ export const severityFor = (type, score) => (type === 'phq9' ? phq9Severity(scor
  */
 export const difficultyToFunctional = (difficulty) => [0, 3, 7, 10][difficulty ?? 0]
 
-export const DISCLAIMER =
-  'This is a screening result, not a medical diagnosis. It describes the symptoms you reported today.'
+export const DISCLAIMER_KEY = 'screening.disclaimer'

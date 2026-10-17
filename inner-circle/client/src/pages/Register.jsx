@@ -2,65 +2,23 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertCircle, ArrowRight, Eye, EyeOff, HeartHandshake, Leaf, Lock, Mail, ShieldCheck, Sparkles, User } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { useT } from '../i18n'
 import { Brand, Mascot, Modal, Note } from '../components/ui'
 
 const DEFAULT_UNIVERSITY = 'Dayananda Sagar University'
 
-const TERMS_SECTIONS = [
-  {
-    title: '1. What information Inner Circle collects',
-    body: 'Your name, age, university, email address and the entries you choose to make — mood check-ins, journal notes, tiny wins, screening answers and your conversations with the companion. You choose what to share; nothing is compulsory except the basics needed to create an account.',
-  },
-  {
-    title: '2. Why we need it',
-    body: 'To create your account, remember your check-ins, show your mood journey over time, and personalise the activities and support we suggest. We ask for your age because registration is currently open only to users aged 18 and above.',
-  },
-  {
-    title: '3. Sensitive information about your well-being',
-    body: 'You may choose to share information about your mental well-being, including screening answers and what you tell the companion. This is sensitive. It is used only to support you inside Inner Circle, and you can delete it at any time from Settings & Privacy.',
-  },
-  {
-    title: '4. How your messages and answers may be processed',
-    body: 'Your messages are analysed for emotional tone (sentiment and emotion analysis) so the companion can respond appropriately and suggest relevant activities. Screening answers are scored and then interpreted by our fuzzy-logic support engine to produce an illustrative level of reported symptoms. In this prototype the analysis runs inside your browser and responses are simulated.',
-  },
-  {
-    title: '5. How information is protected, and who can access it',
-    body: 'In this prototype your data stays in this browser and is not sent to any server. In a deployed version, information would be stored with access controls, secure transmission and data minimisation, and would be visible only to you. No doctor or intern can read your conversations by default.',
-  },
-  {
-    title: '6. When information may be shared',
-    body: 'Information would be shared with authorised professionals only (a) when you ask for professional support and explicitly consent to sharing the relevant part of your record, or (b) when there is a clear and serious safety concern and sharing is necessary to protect you or someone else. In that situation we would tell you wherever possible. Otherwise nothing is shared.',
-  },
-  {
-    title: '7. The AI is not a doctor',
-    body: 'Inner Circle provides supportive conversation, self-help activities and screening tools. It does not diagnose, does not prescribe and is not a replacement for a qualified mental health professional. Always consult a qualified professional for medical advice.',
-  },
-  {
-    title: '8. Accessing and deleting your information',
-    body: 'You can review your saved profile, check-ins, screening records and conversations in Settings & Privacy, and you can delete any of it — or your whole demo profile — from the same page at any time.',
-  },
-]
+const TERMS_SECTION_IDS = ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']
+const PRIVACY_SECTION_IDS = ['p1', 'p2', 'p3', 'p4']
 
-const PRIVACY_SECTIONS = [
-  {
-    title: 'Data stored in this prototype',
-    body: 'Everything lives in this browser\'s local storage under the Inner Circle keys: your demo profile, mood check-ins, journal entries, tiny wins, screening records and companion messages. Nothing is transmitted to a server.',
-  },
-  {
-    title: 'What a real deployment would require',
-    body: 'Encryption in transit and at rest, role-based access control, retention limits, a reviewed privacy policy, audit logging for any professional access, and explicit authorisation before any data is shared with the Department of Psychiatry, Dayananda Sagar University.',
-  },
-  {
-    title: 'Your controls',
-    body: 'Export is simulated in this prototype; deletion works immediately. Optional research consent is separate from accepting the Terms and can be changed at any time.',
-  },
-  {
-    title: 'Voice input',
-    body: 'If you use the microphone, your browser converts speech to text. This app does not record audio continuously and does not send recordings to any external service of its own.',
-  },
-]
+/** Sign-in errors come from the frozen app store in English; map them to keys. */
+const SIGNIN_ERROR_KEYS = {
+  'No demo account on this device yet. Please register first.': 'register.errors.noAccount',
+  'That email is not registered on this device.': 'register.errors.emailNotRegistered',
+  'That password does not match the demo account.': 'register.errors.passwordNoMatch',
+}
 
 export default function Register() {
+  const t = useT()
   const navigate = useNavigate()
   const { profile, register, signIn, toast } = useApp()
   const [mode, setMode] = useState(profile ? 'signin' : 'register')
@@ -99,15 +57,15 @@ export default function Register() {
   const submitRegister = (event) => {
     event.preventDefault()
     const age = Number(form.age)
-    if (!form.name.trim()) return setError('Please enter your full name.')
-    if (!form.age || Number.isNaN(age)) return setError('Please enter your age so we can confirm eligibility.')
-    if (age < 18) return setError('Registration is currently available only to users aged 18 or above. Please come back when you are 18, or explore the public resources on the Department of Psychiatry page.')
-    if (age > 120) return setError('Please enter a valid age.')
-    if (!form.university.trim()) return setError('Please enter your university name.')
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError('Please enter a valid email address.')
-    if (form.password.length < 8) return setError('Please use a password of at least 8 characters.')
-    if (form.password !== form.confirm) return setError('The two passwords do not match.')
-    if (!form.terms) return setError('Please accept the Terms and Conditions to create your account.')
+    if (!form.name.trim()) return setError('register.errors.name')
+    if (!form.age || Number.isNaN(age)) return setError('register.errors.ageRequired')
+    if (age < 18) return setError('register.errors.ageMin')
+    if (age > 120) return setError('register.errors.ageInvalid')
+    if (!form.university.trim()) return setError('register.errors.university')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setError('register.errors.email')
+    if (form.password.length < 8) return setError('register.errors.password')
+    if (form.password !== form.confirm) return setError('register.errors.passwordMismatch')
+    if (!form.terms) return setError('register.errors.terms')
 
     register({
       name: form.name,
@@ -117,63 +75,86 @@ export default function Register() {
       password: form.password,
       research: form.research,
     })
-    toast('Welcome to Inner Circle 🌿')
+    toast(t('register.toast.welcome'))
     navigate('/home', { replace: true })
   }
 
   const submitSignIn = (event) => {
     event.preventDefault()
     const result = signIn(form.email, form.password)
-    if (!result.ok) return setError(result.error)
-    toast('Welcome back 🌿')
+    if (!result.ok) return setError(SIGNIN_ERROR_KEYS[result.error] || result.error)
+    toast(t('register.toast.welcomeBack'))
     navigate('/home', { replace: true })
   }
+
+  const renderConsentLine = () => {
+    const parts = t('register.consent.terms').split(/(\{\{terms\}\}|\{\{privacy\}\})/)
+    return parts.map((part, i) => {
+      if (part === '{{terms}}') {
+        return (
+          <a key={`terms-${i}`} href="#terms" onClick={(e) => { e.preventDefault(); setLegal('terms') }}>
+            {t('register.consent.termsLink')}
+          </a>
+        )
+      }
+      if (part === '{{privacy}}') {
+        return (
+          <a key={`privacy-${i}`} href="#privacy" onClick={(e) => { e.preventDefault(); setLegal('privacy') }}>
+            {t('register.consent.privacyLink')}
+          </a>
+        )
+      }
+      return part
+    })
+  }
+
+  const researchParts = t('register.consent.research').split('{{bold}}')
+  const termsNoteParts = t('register.terms.note').split('{{bold}}')
 
   return (
     <div className="auth-page">
       <aside className="auth-side">
         <Brand />
-        <h1>A quiet space for students to check in with themselves.</h1>
+        <h1>{t('register.hero.title')}</h1>
         <p className="muted" style={{ maxWidth: '46ch' }}>
-          Talk to a supportive companion, understand how you feel with recognised screening
-          tools, unwind with calm activities, and reach real people when you need them.
+          {t('register.hero.body')}
         </p>
         <div className="auth-points">
           <div className="auth-point">
             <span><HeartHandshake size={16} /></span>
-            <span><b>Supportive, not clinical.</b> Screening tools and an AI companion that never pretends to be a doctor.</span>
+            <span><b>{t('register.hero.points.supportiveTitle')}</b> {t('register.hero.points.supportiveBody')}</span>
           </div>
           <div className="auth-point">
             <span><ShieldCheck size={16} /></span>
-            <span><b>Private by design.</b> This prototype stores everything in your browser only.</span>
+            <span><b>{t('register.hero.points.privateTitle')}</b> {t('register.hero.points.privateBody')}</span>
           </div>
           <div className="auth-point">
             <span><Sparkles size={16} /></span>
-            <span><b>Never forced.</b> No questionnaire is required before you explore the app.</span>
+            <span><b>{t('register.hero.points.neverTitle')}</b> {t('register.hero.points.neverBody')}</span>
           </div>
         </div>
         <div style={{ marginTop: '2rem', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
           <Mascot size={54} />
           <p className="tiny muted" style={{ margin: 0, maxWidth: '30ch' }}>
-            In collaboration with the Department of Psychiatry, Dayananda Sagar University.
+            {t('register.hero.collab')}
           </p>
         </div>
       </aside>
 
       <div className="auth-form-wrap">
         <div className="auth-form">
-          <span className="kicker">{mode === 'register' ? 'Create your account' : 'Welcome back'}</span>
-          <h2 style={{ marginBottom: '0.4rem' }}>{mode === 'register' ? 'Register' : 'Sign in'}</h2>
+          <span className="kicker">{mode === 'register' ? t('register.kicker.register') : t('register.kicker.signin')}</span>
+          <h2 style={{ marginBottom: '0.4rem' }}>{mode === 'register' ? t('register.heading.register') : t('register.heading.signin')}</h2>
           <p className="muted small" style={{ marginBottom: '1.3rem' }}>
             {mode === 'register'
-              ? 'A short form — then you go straight to your home page.'
-              : 'Sign in to the demo profile saved on this device.'}
+              ? t('register.sub.register')
+              : t('register.sub.signin')}
           </p>
 
           {error && (
             <div className="form-error" role="alert">
               <AlertCircle size={15} />
-              <span>{error}</span>
+              <span>{t(error)}</span>
             </div>
           )}
 
@@ -181,36 +162,36 @@ export default function Register() {
             {mode === 'register' && (
               <>
                 <label className="field">
-                  <span>Full name</span>
+                  <span>{t('register.fields.name')}</span>
                   <input type="text" value={form.name} onChange={set('name')} placeholder="Ananya Sharma" autoComplete="name" />
                 </label>
 
                 <div className="field-row">
                   <label className="field">
-                    <span>Age <em>18 or above</em></span>
+                    <span>{t('register.fields.age')} <em>{t('register.fields.ageHint')}</em></span>
                     <input type="number" min={1} max={120} value={form.age} onChange={set('age')} placeholder="20" />
                   </label>
                   <label className="field">
-                    <span>University</span>
-                    <input type="text" value={form.university} onChange={set('university')} placeholder="Your university" />
+                    <span>{t('register.fields.university')}</span>
+                    <input type="text" value={form.university} onChange={set('university')} placeholder={t('register.placeholders.university')} />
                   </label>
                 </div>
               </>
             )}
 
             <label className="field">
-              <span>Email ID</span>
+              <span>{t('register.fields.email')}</span>
               <input type="email" value={form.email} onChange={set('email')} placeholder="you@university.edu" autoComplete="email" />
             </label>
 
             <label className="field">
-              <span>Password</span>
+              <span>{t('register.fields.password')}</span>
               <span style={{ position: 'relative', display: 'block' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={set('password')}
-                  placeholder={mode === 'register' ? 'At least 8 characters' : 'Your password'}
+                  placeholder={mode === 'register' ? t('register.placeholders.passwordNew') : t('register.placeholders.passwordExisting')}
                   autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                   style={{ paddingRight: '2.6rem' }}
                 />
@@ -219,7 +200,7 @@ export default function Register() {
                   className="icon-btn"
                   style={{ position: 'absolute', right: '0.25rem', top: '50%', transform: 'translateY(-50%)' }}
                   onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('register.aria.hidePassword') : t('register.aria.showPassword')}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -228,8 +209,8 @@ export default function Register() {
 
             {mode === 'register' && (
               <label className="field">
-                <span>Confirm password</span>
-                <input type="password" value={form.confirm} onChange={set('confirm')} placeholder="Type it again" autoComplete="new-password" />
+                <span>{t('register.fields.confirm')}</span>
+                <input type="password" value={form.confirm} onChange={set('confirm')} placeholder={t('register.placeholders.confirm')} autoComplete="new-password" />
               </label>
             )}
 
@@ -238,44 +219,44 @@ export default function Register() {
                 <div className="check-row">
                   <input id="terms" type="checkbox" checked={form.terms} onChange={set('terms')} />
                   <label htmlFor="terms">
-                    I have read and agree to the{' '}
-                    <a href="#terms" onClick={(e) => { e.preventDefault(); setLegal('terms') }}>Terms and Conditions</a> and the{' '}
-                    <a href="#privacy" onClick={(e) => { e.preventDefault(); setLegal('privacy') }}>Privacy Notice</a>.
+                    {renderConsentLine()}
                   </label>
                 </div>
                 <div className="check-row">
                   <input id="research" type="checkbox" checked={form.research} onChange={set('research')} />
                   <label htmlFor="research">
-                    Optional: I agree that my <b>anonymised, de-identified</b> data may be used for wellbeing research. This is separate from the Terms and is not required to use Inner Circle.
+                    {researchParts[0]}
+                    <b>{t('register.consent.researchBold')}</b>
+                    {researchParts[1]}
                   </label>
                 </div>
               </>
             )}
 
             <button className="btn btn-primary btn-lg btn-block" type="submit">
-              {mode === 'register' ? <>Register <ArrowRight size={17} /></> : 'Sign in'}
+              {mode === 'register' ? <>{t('register.submit.register')} <ArrowRight size={17} /></> : t('register.submit.signin')}
             </button>
           </form>
 
           <p className="auth-alt">
             {mode === 'register' ? (
               <>
-                Already registered on this device?{' '}
-                <a href="#signin" onClick={(e) => { e.preventDefault(); setError(''); setMode('signin') }}>Sign in</a>
+                {t('register.alt.haveAccount')}{' '}
+                <a href="#signin" onClick={(e) => { e.preventDefault(); setError(''); setMode('signin') }}>{t('register.alt.signin')}</a>
                 {' · '}
                 <button type="button" className="btn btn-ghost btn-sm" onClick={fillDemo} style={{ padding: '0.1rem 0.4rem' }}>
-                  Fill demo details
+                  {t('register.alt.fillDemo')}
                 </button>
               </>
             ) : (
               <>
-                New here?{' '}
-                <a href="#register" onClick={(e) => { e.preventDefault(); setError(''); setMode('register') }}>Create an account</a>
+                {t('register.alt.newHere')}{' '}
+                <a href="#register" onClick={(e) => { e.preventDefault(); setError(''); setMode('register') }}>{t('register.alt.createAccount')}</a>
                 {profile && (
                   <>
                     {' · '}
                     <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/home')} style={{ padding: '0.1rem 0.4rem' }}>
-                      Continue as {profile.firstName}
+                      {t('register.alt.continueAs', { name: profile.firstName })}
                     </button>
                   </>
                 )}
@@ -284,57 +265,56 @@ export default function Register() {
           </p>
 
           <p className="tiny muted center" style={{ marginTop: '1.4rem', display: 'flex', gap: '0.4rem', justifyContent: 'center', alignItems: 'center' }}>
-            <Lock size={12} /> Demo prototype — no real sensitive data is collected or transmitted.
+            <Lock size={12} /> {t('register.demoNote')}
           </p>
         </div>
       </div>
 
       {legal === 'terms' && (
         <Modal
-          kicker="PLEASE READ"
-          title="Terms & Conditions"
+          kicker={t('register.terms.kicker')}
+          title={t('register.terms.title')}
           wide
           onClose={() => setLegal(null)}
-          footer={<button className="btn btn-primary" onClick={() => setLegal(null)}>I understand</button>}
+          footer={<button className="btn btn-primary" onClick={() => setLegal(null)}>{t('register.terms.understand')}</button>}
         >
           <Note tone="mint" icon={Sparkles}>
-            Written in plain language on purpose. In short: your information supports <b>you</b>, is never
-            sold, and the AI is not a substitute for a professional.
+            {termsNoteParts[0]}
+            <b>{t('register.terms.noteBold')}</b>
+            {termsNoteParts[1]}
           </Note>
           <div className="legal-scroll" style={{ marginTop: '0.9rem' }}>
-            {TERMS_SECTIONS.map((section) => (
-              <div key={section.title}>
-                <h4>{section.title}</h4>
-                <p>{section.body}</p>
+            {TERMS_SECTION_IDS.map((id) => (
+              <div key={id}>
+                <h4>{t(`register.terms.sections.${id}.title`)}</h4>
+                <p>{t(`register.terms.sections.${id}.body`)}</p>
               </div>
             ))}
           </div>
           <p className="tiny muted" style={{ marginTop: '0.7rem' }}>
-            Accepting the Terms is required. Optional research consent is asked separately below the
-            checkbox and can be changed later in Settings &amp; Privacy.
+            {t('register.terms.footnote')}
           </p>
         </Modal>
       )}
 
       {legal === 'privacy' && (
         <Modal
-          kicker="YOUR DATA"
-          title="Privacy Notice"
+          kicker={t('register.privacy.kicker')}
+          title={t('register.privacy.title')}
           wide
           onClose={() => setLegal(null)}
-          footer={<button className="btn btn-primary" onClick={() => setLegal(null)}>Close</button>}
+          footer={<button className="btn btn-primary" onClick={() => setLegal(null)}>{t('common.close')}</button>}
         >
           <div className="legal-scroll">
-            {PRIVACY_SECTIONS.map((section) => (
-              <div key={section.title}>
-                <h4>{section.title}</h4>
-                <p>{section.body}</p>
+            {PRIVACY_SECTION_IDS.map((id) => (
+              <div key={id}>
+                <h4>{t(`register.privacy.sections.${id}.title`)}</h4>
+                <p>{t(`register.privacy.sections.${id}.body`)}</p>
               </div>
             ))}
           </div>
           <p className="tiny muted" style={{ marginTop: '0.7rem' }}>
-            Contact routes, retention rules and the review of this notice with the Department of
-            Psychiatry, Dayananda Sagar University are pending institutional approval.
+            {t('register.privacy.footnote')}
           </p>
         </Modal>
       )}

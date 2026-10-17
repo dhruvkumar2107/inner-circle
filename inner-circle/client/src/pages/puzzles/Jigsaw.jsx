@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useI18n } from '../../i18n'
 
 const SIZE = 3
 const TILE_COUNT = SIZE*SIZE
@@ -23,6 +24,7 @@ function isSolved(order) {
 }
 
 export default function Jigsaw({ onComplete }) {
+  const { t } = useI18n()
   const [order, setOrder] = useState(() => shuffle(getSolved()))
   const [selected, setSelected] = useState(null)
   const [moves, setMoves] = useState(0)
@@ -54,10 +56,10 @@ export default function Jigsaw({ onComplete }) {
   return (
     <div className="puzzle-view">
       <div className="puzzle-controls spread">
-        <span className="puzzle-stat">Moves: {moves}</span>
-        <button type="button" className="btn btn-outline btn-sm" onClick={newGame}>New puzzle</button>
+        <span className="puzzle-stat">{t('puzzles.jigsaw.moves', { moves })}</span>
+        <button type="button" className="btn btn-outline btn-sm" onClick={newGame}>{t('puzzles.jigsaw.newPuzzle')}</button>
       </div>
-      {isSolved(order) && <div className="status-message">Solved</div>}
+      {isSolved(order) && <div className="status-message">{t('puzzles.jigsaw.solved')}</div>}
       <div className="puzzle-board jigsaw-grid">
         {order.map((tileIdx, pos) => {
           const tr = (Math.floor(tileIdx / SIZE) / (SIZE - 1)) * 100
@@ -73,12 +75,12 @@ export default function Jigsaw({ onComplete }) {
                 backgroundPosition: `${tc}% ${tr}%`,
                 backgroundSize: '300% 300%'
               }}
-              aria-label={`Tile ${tileIdx + 1}`}
+              aria-label={t('puzzles.jigsaw.tileLabel', { n: tileIdx + 1 })}
             />
           )
         })}
       </div>
-      <p className="puzzle-hint">Click two tiles to swap. Arrange to form the picture.</p>
+      <p className="puzzle-hint">{t('puzzles.jigsaw.hint')}</p>
     </div>
   )
 }

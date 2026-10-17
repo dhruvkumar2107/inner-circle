@@ -1,18 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useI18n } from '../../i18n'
 
 const SIZE = 12
-const WORDS = ['CALM', 'FOCUS', 'BREATHE', 'GENTLE', 'STEADY', 'LISTEN', 'REFLECT', 'RESET']
+const WORD_COUNT = 8
 const DIRS = [[1,0],[0,1],[1,1],[1,-1],[-1,0],[0,-1],[-1,-1],[-1,1]]
-
-const randChar = () => String.fromCharCode(65 + Math.floor(Math.random() * 26))
 
 function reverse(value) {
   return value.split('').reverse().join('')
 }
 
-function generateGrid() {
+function generateGrid(words, fill) {
+  const randChar = () => fill[Math.floor(Math.random() * fill.length)]
   const grid = Array(SIZE).fill().map(() => Array(SIZE).fill(''))
-  for (const word of WORDS) {
+  for (const word of words) {
     for (let tries = 0; tries < 200; tries++) {
       const [dr, dc] = DIRS[Math.floor(Math.random() * DIRS.length)]
       const r0 = Math.floor(Math.random() * SIZE)
@@ -50,20 +50,33 @@ function pathBetween(a, b) {
 }
 
 export default function WordSearch({ onComplete }) {
-  const [grid, setGrid] = useState(generateGrid)
+  const { t, lang } = useI18n()
+  const words = useMemo(
+    () => Array.from({ length: WORD_COUNT }, (_, i) => t(`puzzles.wordSearch.words.${i}`)),
+    [t],
+  )
+  const fill = t('puzzles.wordSearch.fill')
+  const [grid, setGrid] = useState(() => generateGrid(words, fill))
   const [selected, setSelected] = useState([])
   const [found, setFound] = useState([])
   const completedRef = useRef(false)
 
   useEffect(() => {
-    if (found.length === WORDS.length && !completedRef.current) {
+    setGrid(generateGrid(words, fill))
+    setSelected([])
+    setFound([])
+    completedRef.current = false
+  }, [lang, words, fill])
+
+  useEffect(() => {
+    if (found.length === words.length && !completedRef.current) {
       completedRef.current = true
       onComplete()
     }
-  }, [found, onComplete])
+  }, [found, words, onComplete])
 
   const reset = () => {
-    setGrid(generateGrid())
+    setGrid(generateGrid(words, fill))
     setSelected([])
     setFound([])
     completedRef.current = false
@@ -75,7 +88,7 @@ export default function WordSearch({ onComplete }) {
       const path = pathBetween(selected[0], cell)
       if (path) {
         const text = path.map((p) => grid[p.r][p.c]).join('')
-        const match = WORDS.find((w) => w === text || w === reverse(text))
+        const match = words.find((w) => w === text || w === reverse(text))
         if (match && !found.some((f) => f.word === match)) {
           setFound((list) => [...list, { word: match, cells: path }])
           setSelected([])
@@ -93,13 +106,13 @@ export default function WordSearch({ onComplete }) {
   return (
     <div className="puzzle-view">
       <div className="puzzle-controls spread">
-        <span className="puzzle-stat">Found: {found.length}/{WORDS.length}</span>
-        <button type="button" className="btn btn-outline btn-sm" onClick={reset}>New puzzle</button>
+        <span className="puzzle-stat">{t('puzzles.wordSearch.found', { found: found.length, total: words.length })}</span>
+        <button type="button" className="btn btn-outline btn-sm" onClick={reset}>{t('puzzles.wordSearch.newPuzzle')}</button>
       </div>
 
-      {found.length === WORDS.length && <div className="status-message">All words found</div>}
+      {found.length === words.length && <div className="status-message">{t('puzzles.wordSearch.allFound')}</div>}
 
-      <div className="puzzle-board ws-grid" role="grid" aria-label="Word search grid">
+      <div className="puzzle-board ws-grid" role="grid" aria-label={t('puzzles.wordSearch.gridLabel')}>
         {Array(SIZE).fill().map((_, r) =>
           Array(SIZE).fill().map((_, c) => (
             <button
@@ -107,7 +120,7 @@ export default function WordSearch({ onComplete }) {
               type="button"
               className={`tile-btn ${isSelected(r, c) ? 'ws-selected' : ''} ${isFoundCell(r, c) ? 'ws-found' : ''}`}
               onClick={() => handleClick(r, c)}
-              aria-label={`Letter ${grid[r][c]}`}
+              aria-label={t('puzzles.wordSearch.letterLabel', { letter: grid[r][c] })}
             >
               {grid[r][c]}
             </button>
@@ -116,11 +129,11 @@ export default function WordSearch({ onComplete }) {
       </div>
 
       <div className="word-list">
-        {WORDS.map((word) => (
+        {words.map((word) => (
           <span key={word} className={`word-pill ${isFoundWord(word) ? 'found' : ''}`}>{word}</span>
         ))}
       </div>
-      <p className="puzzle-hint">Click the first letter, then the last letter of a word along a straight line.</p>
+      <p className="puzzle-hint">{t('puzzles.wordSearch.hint')}</p>
     </div>
   )
 }

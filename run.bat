@@ -1,3 +1,5 @@
 @echo off
-cd /d "C:\Users\Dhruv\Documents\khushi-major-prjt\inner-circle\server"
-node server.js
+REM Starts the Inner Circle web app (client) in development mode.
+cd /d "%~dp0inner-circle"
+npm run dev --workspace client
+pause

@@ -1,0 +1,153 @@
+{
+  "headTitle": "Your AI companion",
+  "headSub": "A supportive conversation, whenever you want it. Type or speak.",
+  "simulatedAi": "Simulated AI",
+  "liveAi": "Live AI",
+  "remoteFailed": "Couldn't reach the live companion just now — carrying on with the local companion.",
+  "analysis": {
+    "title": "Simulated sentiment analysis",
+    "lastFive": "last 5 messages read as {{tone}} (score {{score}})",
+    "latest": "latest:"
+  },
+  "ttsOn": "Turn read-aloud on",
+  "ttsOff": "Turn read-aloud off",
+  "ttsTitleOn": "Read replies aloud: on",
+  "ttsTitleOff": "Read replies aloud: off",
+  "clear": "Clear conversation",
+  "clearConfirm": "Click again to clear",
+  "toastTtsOn": "Replies will be read aloud.",
+  "toastTtsOff": "Read-aloud turned off.",
+  "toastCleared": "Conversation cleared.",
+  "empty": {
+    "title": "Say hello, or share what's on your mind",
+    "body": "I can listen, help you put words to things and suggest an activity. I'm a simulated companion in this prototype — I don't diagnose, and I'm not a replacement for a person."
+  },
+  "you": "You",
+  "name": "Companion",
+  "thinking": "Companion is thinking…",
+  "suggested": "Suggested:",
+  "open": "Open",
+  "placeholder": "Type what's on your mind…",
+  "messageAria": "Your message",
+  "micStart": "Start voice input",
+  "micStop": "Stop voice input",
+  "speak": "Speak",
+  "stop": "Stop",
+  "send": "Send message",
+  "readAloudAria": "Read this reply aloud",
+  "readAloud": "Read aloud",
+  "hint": {
+    "listening": "Listening — speak now, then pause. Your words appear here before sending.",
+    "default": "Enter to send · Shift + Enter for a new line · Use the microphone to speak instead."
+  },
+  "disclaimer": "responses come from a scripted companion and a rule-based sentiment analysis running entirely in your browser. Crisis words always open urgent support straight away — never a score, never a wait.",
+  "replies": {
+    "anxious": {
+      "0": "That restless, on-edge feeling is exhausting to sit with. Would it help to talk about what's triggering it, or would you rather try a short grounding exercise first?",
+      "1": "I hear you — anxiety can make everything feel louder than it is. We could slow things down together with the 5-4-3-2-1 grounding exercise, or you can tell me more about what's been worrying you.",
+      "2": "Thank you for saying it out loud. Would you like to unpack the worry together, or take one quiet minute of breathing to give yourself some room first?"
+    },
+    "academic": {
+      "0": "That sounds like a lot to carry at once. Would it help to talk about what's stressing you most, or would you prefer to break your assignments into smaller steps?",
+      "1": "Academic pressure has a way of blurring everything into one huge wall. Want to sort through it together, or would a short break first help you see the next step?",
+      "2": "You're carrying a heavy load right now. We could talk it through, or I can help you sketch a simple plan for the next day or two — whichever feels lighter."
+    },
+    "overwhelmed": {
+      "0": "It sounds like everything is landing on you at the same time. Would you like to talk about what's weighing most, or take one small pause before anything else?",
+      "1": "When it's all too much, you don't have to solve it all right now. We could slow down together for a minute, or you could tell me the one thing that feels heaviest.",
+      "2": "That's a lot to hold. Would a short breathing break help first, or do you want to talk it through and let it out?"
+    },
+    "lonely": {
+      "0": "Loneliness can be very heavy, especially when everyone else seems busy. Would you like to talk about what's missing, or is there something small we could do to lighten the moment?",
+      "1": "I'm glad you told me. You don't have to fill the quiet alone right now — we can talk for as long as you like. What's been on your mind lately?",
+      "2": "Feeling disconnected from people hurts. Would it help to talk about the people around you, or shall we look at something gentle to do for a few minutes?"
+    },
+    "sleep": {
+      "0": "Sleep makes everything harder, and a tired mind tends to amplify worries. Would you like to talk about what keeps you up, or try a slow breathing rhythm you can use in bed?",
+      "1": "I'm sorry sleep has been rough. A longer exhale calms the body before rest — I can guide you through one, or we can talk about what's keeping your mind busy at night."
+    },
+    "low": {
+      "0": "I'm sorry you're feeling this way — that heaviness deserves some gentleness. Would you like to keep talking about it, or would a soft, no-pressure activity feel better?",
+      "1": "Thank you for trusting me with this. There's no rush to feel different. Do you want to tell me more, or would you like something quiet to focus on for a while?",
+      "2": "That sounds painful to carry. Would it help to talk through what happened, or to take a few calm minutes first?"
+    },
+    "planning": {
+      "0": "Let's make it smaller and lighter. Pick the single task that would help most tomorrow — what is it?",
+      "1": "Good — naming the mess is the first step. Tell me your top two priorities for today and we'll shrink everything else.",
+      "2": "We can build a simple plan together: one must-do, one nice-to-do, and one thing you'll deliberately skip. Want to try?"
+    },
+    "positive": {
+      "0": "That's genuinely good to hear. Would you like to save it as a tiny win in your mood journey so future-you can see it?",
+      "1": "I'm glad — hold on to that feeling for a moment. Want to record what went well, or carry on with your day?",
+      "2": "Lovely. Small wins like this are worth noticing. Shall we log it, or is there anything else you'd like to talk through?"
+    },
+    "smalltalk": {
+      "0": "Hello — I'm here and listening. How are you arriving today?",
+      "1": "Hi there. You can share as much or as little as you like. What's on your mind?",
+      "2": "Hey. Glad you're here. How has your day been so far?"
+    },
+    "aboutAi": {
+      "0": "I'm a supportive AI companion inside Inner Circle — not a doctor and not a replacement for one. I can listen, help you reflect and suggest activities. If you'd like a professional opinion, I can take you to the Department of Psychiatry page whenever you're ready.",
+      "1": "I'm a simulated companion for this prototype: I can't diagnose or prescribe, and I won't pretend to. What I can do is listen, help you put words to what you're feeling, and point you to real support if you want it."
+    }
+  },
+  "smalltalkNegative": "It sounds like today has been heavy. I'm here — do you want to tell me what happened?",
+  "fallbacks": {
+    "0": "I hear you. Would you like to say more about that, or would a gentle activity help right now?",
+    "1": "Thank you for sharing that with me. What do you think is behind it — and what would feel most supportive at this moment?",
+    "2": "That makes sense, and you don't have to figure it all out today. Want to keep talking, or take a short pause together?",
+    "3": "I'm listening. If you had to name the part that's weighing on you most, what would it be?",
+    "topic": {
+      "0": "Earlier you mentioned {{topic}} — I'm wondering if that's still what's sitting heavily with you. I hear you. Would you like to say more about that, or would a gentle activity help right now?",
+      "1": "Earlier you mentioned {{topic}} — I'm wondering if that's still what's sitting heavily with you. Thank you for sharing that with me. What do you think is behind it — and what would feel most supportive at this moment?",
+      "2": "Earlier you mentioned {{topic}} — I'm wondering if that's still what's sitting heavily with you. That makes sense, and you don't have to figure it all out today. Want to keep talking, or take a short pause together?",
+      "3": "Earlier you mentioned {{topic}} — I'm wondering if that's still what's sitting heavily with you. I'm listening. If you had to name the part that's weighing on you most, what would it be?"
+    }
+  },
+  "crisis": {
+    "text": "I'm really glad you told me, and I'm taking this seriously. I'm an AI companion, so I can't support you the way a person should right now.\n\nPlease reach out to someone immediately — a person you trust, or one of the urgent support numbers in Inner Circle. If you may be in immediate danger, please contact emergency services on 112.\n\nWould you like me to open the urgent support options?"
+  },
+  "prompts": {
+    "tellMore": "Tell me more",
+    "helpRelax": "Help me relax",
+    "organise": "Help me organise my day",
+    "justTalk": "I just want to talk",
+    "calmDown": "Help me calm down",
+    "needTalk": "I need to talk",
+    "distraction": "Suggest a distraction",
+    "aboutDay": "Talk about my day",
+    "understand": "I want to understand my feelings",
+    "somethingCalming": "Suggest something calming",
+    "nextStep": "Help me with the next step",
+    "needBreak": "I need a break instead",
+    "recordWin": "Record a tiny win",
+    "nothingElse": "Nothing else, thanks",
+    "feelingAnxious": "I'm feeling anxious",
+    "academicPressure": "I have too much academic pressure",
+    "professional": "Show me professional support",
+    "somethingElse": "I want to talk about something else",
+    "wantTalk": "I want to talk",
+    "openUrgent": "Open urgent support",
+    "talkMore": "I want to talk more"
+  },
+  "quick": {
+    "anxious": "I'm feeling anxious.",
+    "academic": "I have too much academic pressure.",
+    "lonely": "I feel lonely.",
+    "calm": "I need help calming down.",
+    "talk": "I just want to talk.",
+    "organise": "Help me organise my day."
+  },
+  "suggestions": {
+    "grounding": "Try the 5-4-3-2-1 grounding exercise",
+    "minuteReset": "Take a one-minute reset",
+    "breathingReset": "One-minute breathing reset",
+    "calmingActivity": "Explore a calming activity",
+    "boxBreathing": "Box breathing exercise",
+    "quietActivity": "A quiet, relaxing activity",
+    "puzzles": "Puzzles for a focus break",
+    "recordWin": "Record a tiny win",
+    "professional": "Contact a Professional",
+    "openUrgent": "Open urgent support options"
+  }
+}

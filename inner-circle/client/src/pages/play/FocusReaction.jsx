@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Play, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const ROUND = 20
 const TARGET_LIFE = 1600
@@ -8,6 +9,7 @@ const TONES = ['tone-sage', 'tone-mint', 'tone-amber', 'tone-rose', 'tone-sky']
 
 export default function FocusReaction({ best = 0, onBest }) {
   const { toast } = useApp()
+  const t = useT()
   const [phase, setPhase] = useState('ready')
   const [score, setScore] = useState(0)
   const [timeLeft, setTimeLeft] = useState(ROUND)
@@ -44,8 +46,8 @@ export default function FocusReaction({ best = 0, onBest }) {
       setBestScore(final)
       onBest?.(final)
     }
-    toast('Nice work taking a moment for yourself.')
-  }, [clearAll, onBest, toast])
+    toast(t('play.toast.niceWork'))
+  }, [clearAll, onBest, toast, t])
 
   const spawn = useCallback(() => {
     const stage = stageRef.current
@@ -89,11 +91,11 @@ export default function FocusReaction({ best = 0, onBest }) {
   return (
     <div className="game-shell">
       <div className="game-hud">
-        <span className="game-score">Score <b>{score}</b></span>
+        <span className="game-score">{t('play.hud.score')} <b>{score}</b></span>
         <span className="game-score">
-          Time <b>{phase === 'ready' ? ROUND : timeLeft}s</b>
+          {t('play.hud.time')} <b>{phase === 'ready' ? ROUND : timeLeft}s</b>
         </span>
-        {bestScore > 0 && <span className="game-score">Best <b>{bestScore}</b></span>}
+        {bestScore > 0 && <span className="game-score">{t('play.hud.best')} <b>{bestScore}</b></span>}
         {phase === 'playing' && (
           <button
             type="button"
@@ -101,30 +103,30 @@ export default function FocusReaction({ best = 0, onBest }) {
             style={{ marginLeft: 'auto' }}
             onClick={finish}
           >
-            End early
+            {t('play.focus.endEarly')}
           </button>
         )}
       </div>
       <div className="reaction-stage" ref={stageRef}>
-        {targets.map((t) => (
+        {targets.map((target) => (
           <button
-            key={t.id}
+            key={target.id}
             type="button"
-            className={`reaction-target ${t.tone}`}
-            style={{ left: t.x, top: t.y }}
-            aria-label="Soft target, click for a point"
-            onPointerDown={(e) => { e.preventDefault(); hit(t.id) }}
+            className={`reaction-target ${target.tone}`}
+            style={{ left: target.x, top: target.y }}
+            aria-label={t('play.focus.targetLabel')}
+            onPointerDown={(e) => { e.preventDefault(); hit(target.id) }}
           />
         ))}
         {phase === 'ready' && (
           <div className="reaction-overlay">
             <div className="game-over">
-              <b>Soft focus, 20 seconds</b>
+              <b>{t('play.focus.readyTitle')}</b>
               <p className="small muted" style={{ margin: '0.3rem 0 0.9rem' }}>
-                Gentle targets drift in — tap them for a point. Nothing flashes, nothing is lost.
+                {t('play.focus.readyBody')}
               </p>
               <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <Play size={14} /> Start
+                <Play size={14} /> {t('common.start')}
               </button>
             </div>
           </div>
@@ -132,19 +134,21 @@ export default function FocusReaction({ best = 0, onBest }) {
         {phase === 'over' && (
           <div className="reaction-overlay">
             <div className="game-over">
-              <b>Round complete</b>
+              <b>{t('play.focus.overTitle')}</b>
               <p className="small muted" style={{ margin: '0.3rem 0 0.9rem' }}>
-                You caught <b>{score}</b> targets{score >= bestScore && score > 0 ? ' — a new best!' : ` · best ${bestScore}`}.
+                {score >= bestScore && score > 0
+                  ? t('play.focus.overNewBest', { score })
+                  : t('play.focus.overBest', { score, best: bestScore })}
               </p>
               <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <RotateCcw size={14} /> Play again
+                <RotateCcw size={14} /> {t('play.focus.playAgain')}
               </button>
             </div>
           </div>
         )}
       </div>
       <p className="tiny muted center" style={{ margin: '0.6rem 0 0' }}>
-        A short, gentle round — just tap whatever appears. Stop whenever you like.
+        {t('play.focus.footer')}
       </p>
     </div>
   )

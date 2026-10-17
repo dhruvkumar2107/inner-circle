@@ -4,24 +4,25 @@ import { ArrowLeft, ArrowRight, Clock, ShieldAlert, X } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Badge, Note, PageHeader } from '../components/ui'
 import {
-  DIFFICULTY_RESPONSES, DISCLAIMER, GAD7_INTRO, GAD7_ITEMS, GAD7_MAX,
-  PHQ9_INTRO, PHQ9_ITEMS, PHQ9_MAX, PHQ9_SAFETY_INDEX, RESPONSES,
+  DIFFICULTY_RESPONSES, DISCLAIMER_KEY, GAD7_INTRO_KEY, GAD7_ITEMS, GAD7_MAX, INSTRUMENT_NOTE_KEY,
+  PHQ9_INTRO_KEY, PHQ9_ITEMS, PHQ9_MAX, PHQ9_SAFETY_INDEX, RESPONSES,
   difficultyToFunctional, scoreOf, severityFor,
 } from '../lib/screening'
+import { useT } from '../i18n'
 
 const TYPES = {
   phq9: {
     title: 'PHQ-9',
-    subtitle: 'Depression screening',
-    intro: PHQ9_INTRO,
+    subtitleKey: 'assessments.phq9Focus',
+    introKey: PHQ9_INTRO_KEY,
     items: PHQ9_ITEMS,
     max: PHQ9_MAX,
     safetyIndex: PHQ9_SAFETY_INDEX,
   },
   gad7: {
     title: 'GAD-7',
-    subtitle: 'Anxiety screening',
-    intro: GAD7_INTRO,
+    subtitleKey: 'assessments.gad7Focus',
+    introKey: GAD7_INTRO_KEY,
     items: GAD7_ITEMS,
     max: GAD7_MAX,
     safetyIndex: -1,
@@ -34,6 +35,7 @@ export default function AssessmentRunner() {
   const { type } = useParams()
   const navigate = useNavigate()
   const { addAssessment, openSafety, toast } = useApp()
+  const t = useT()
 
   const config = TYPES[type]
   const [stage, setStage] = useState('intro')
@@ -121,7 +123,7 @@ export default function AssessmentRunner() {
       <div className="assess-shell">
         <PageHeader
           kicker={stage === 'intro' ? 'BEFORE YOU BEGIN' : config.title}
-          title={stage === 'intro' ? `${config.title} — ${config.subtitle}` : stage === 'difficulty' ? 'One last question' : config.title}
+          title={stage === 'intro' ? `${config.title} — ${t(config.subtitleKey)}` : stage === 'difficulty' ? 'One last question' : config.title}
           sub={stage === 'intro' ? 'Read this, then start when you are ready.' : undefined}
           action={
             <button className="btn btn-ghost btn-sm" onClick={() => navigate('/assessments')} aria-label="Leave this check-in">
@@ -149,7 +151,8 @@ export default function AssessmentRunner() {
         {stage === 'intro' && (
           <>
             <section className="card card-pad">
-              <p className="lead">{config.intro}</p>
+              <p className="lead">{t(config.introKey)}</p>
+              <p className="verify-note" style={{ marginTop: '-0.2rem', marginBottom: '0.6rem' }}>{t(INSTRUMENT_NOTE_KEY)}</p>
               <ul style={{ margin: '0.4rem 0 1rem', paddingLeft: '1.15rem', color: 'var(--ink-2)', fontSize: '0.92rem' }}>
                 <li>There are no right or wrong answers — answer for the last two weeks as honestly as you can.</li>
                 <li>About {config.title === 'PHQ-9' ? '3' : '2'} minutes. You can leave at any point; nothing is saved until you finish.</li>
@@ -164,13 +167,13 @@ export default function AssessmentRunner() {
               <div className="assess-nav">
                 <Link className="btn btn-ghost" to="/assessments"><ArrowLeft size={15} /> Back</Link>
                 <button className="btn btn-primary" onClick={() => setStage('questions')}>
-                  Start the {config.title} <ArrowRight size={15} />
+                  {t('assessments.start', { title: config.title })} <ArrowRight size={15} />
                 </button>
               </div>
             </section>
             <p className="verify-note" style={{ marginTop: '0.8rem' }}>
-              {DISCLAIMER}
-            </p>
+               {t(DISCLAIMER_KEY)}
+             </p>
           </>
         )}
 
@@ -191,8 +194,8 @@ export default function AssessmentRunner() {
                   onClick={() => chooseAnswer(option.value)}
                 >
                   <span className="option-dot" aria-hidden="true" />
-                  {option.label}
-                </button>
+                   {t(option.labelKey)}
+                 </button>
               ))}
             </div>
 
@@ -231,8 +234,8 @@ export default function AssessmentRunner() {
                   onClick={() => chooseDifficulty(option.value)}
                 >
                   <span className="option-dot" aria-hidden="true" />
-                  {option.label}
-                </button>
+                   {t(option.labelKey)}
+                 </button>
               ))}
             </div>
             <div className="assess-nav">

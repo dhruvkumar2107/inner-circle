@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const OPTIONS = [
-  { label: '1 min', ms: 60 * 1000 },
-  { label: '3 min', ms: 3 * 60 * 1000 },
-  { label: '5 min', ms: 5 * 60 * 1000 },
+  { minutes: 1, ms: 60 * 1000 },
+  { minutes: 3, ms: 3 * 60 * 1000 },
+  { minutes: 5, ms: 5 * 60 * 1000 },
 ]
 
 export default function RelaxTimer() {
+  const t = useT()
   const { toast } = useApp()
   const [choice, setChoice] = useState(OPTIONS[0].ms)
   const [running, setRunning] = useState(false)
@@ -79,7 +81,7 @@ export default function RelaxTimer() {
     setPaused(false)
     setFinished(true)
     setRemaining(0)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('breathe.toastNiceWork'))
   }
 
   const secs = Math.max(0, Math.ceil(remaining / 1000))
@@ -91,7 +93,7 @@ export default function RelaxTimer() {
       <div className="breath-stage">
         <div className={`breath-circle ${running && !paused ? 'breathe-in' : ''}`} aria-hidden="true" />
         <div className="breath-label" aria-live="polite">
-          {running ? 'Gentle breathing' : finished ? 'Done' : 'Relaxation timer'}
+          {running ? t('breathe.timer.breathing') : finished ? t('breathe.status.done') : t('breathe.exercises.timer.title')}
         </div>
         <div className="breath-timer" aria-live="polite">
           {mm}:{ss}
@@ -110,44 +112,44 @@ export default function RelaxTimer() {
               }}
               disabled={running}
             >
-              {opt.label}
+              {opt.minutes} {t('common.minutes')}
             </button>
           ))}
         </div>
         <div className="ctrl-row">
           {!running && !finished && (
             <button type="button" className="btn btn-primary" onClick={start}>
-              Start
+              {t('common.start')}
             </button>
           )}
           {running && !paused && (
             <button type="button" className="btn btn-soft" onClick={pause}>
-              Pause
+              {t('breathe.controls.pause')}
             </button>
           )}
           {running && paused && (
             <button type="button" className="btn btn-soft" onClick={resume}>
-              Resume
+              {t('breathe.controls.resume')}
             </button>
           )}
           {running && (
             <button type="button" className="btn btn-outline" onClick={stop}>
-              Stop
+              {t('breathe.controls.stop')}
             </button>
           )}
           {finished && (
             <>
               <button type="button" className="btn btn-primary" onClick={start}>
-                Start again
+                {t('breathe.controls.startAgain')}
               </button>
               <button type="button" className="btn btn-outline" onClick={stop}>
-                Reset
+                {t('breathe.controls.reset')}
               </button>
             </>
           )}
         </div>
         <div className="breath-instruction" style={{ marginTop: '0.4rem' }}>
-          You can stop and return to normal breathing whenever you like.
+          {t('breathe.safetyStop')}
         </div>
       </div>
     </div>

@@ -4,7 +4,8 @@ import { ArrowRight, MessageCircle, ShieldAlert, Sparkles, Waves } from 'lucide-
 import { useApp } from '../context/AppContext'
 import { Badge, Note, PageHeader, SectionTitle } from '../components/ui'
 import { INPUT_META, RULES, inferSupport, smoothnessDemo } from '../lib/fuzzy'
-import { analyze, emotionLabel } from '../lib/sentiment'
+import { useT } from '../i18n'
+import { analyze, emotionLabelKey, topicKey, sentimentLabelKey } from '../lib/sentiment'
 
 const PIPELINE = [
   { title: 'You choose what to share', body: 'Mood check-ins, conversations, screening answers — every part is optional and nothing is scheduled for you.' },
@@ -18,6 +19,7 @@ const SLIDER_DEFAULTS = { phq9: 6, gad7: 7, sentiment: -0.2, stress: 6, function
 
 export default function SupportInsights() {
   const { assessments, recentSentiment } = useApp()
+  const t = useT()
   const [inputs, setInputs] = useState(SLIDER_DEFAULTS)
   const [demoText, setDemoText] = useState('I have two deadlines this week and I can barely sleep.')
 
@@ -80,9 +82,9 @@ export default function SupportInsights() {
           <span className={`meter ${demo.sentiment.score < -0.12 ? 'neg' : ''}`} aria-hidden="true">
             <i style={{ width: `${Math.round(((demo.sentiment.score + 1) / 2) * 100)}%` }} />
           </span>
-          <span>{demo.sentiment.label} ({demo.sentiment.score}) · confidence {demo.sentiment.confidence}</span>
-          <span>· <b>{emotionLabel(demo.emotion.primary)}</b></span>
-          {demo.topics.primary !== 'General' && <span>· topic: <b>{demo.topics.primary}</b></span>}
+          <span>{t(sentimentLabelKey(demo.sentiment.label))} ({demo.sentiment.score}) · confidence {demo.sentiment.confidence}</span>
+          <span>· <b>{t(emotionLabelKey(demo.emotion.primary))}</b></span>
+          {demo.topics.primary !== 'General' && <span>· topic: <b>{t(topicKey(demo.topics.primary))}</b></span>}
         </div>
         {demo.crisis.isCrisis ? (
           <Note tone="rose" icon={ShieldAlert}>
@@ -148,9 +150,9 @@ export default function SupportInsights() {
             </span>
             <div>
               <span className={`band-pill ${TONE_CLASS[result.tone]}`}>Tier {result.tier}</span>
-              <p className="lead" style={{ margin: '0.55rem 0 0.2rem' }}>{result.categoryLabel}</p>
+              <p className="lead" style={{ margin: '0.55rem 0 0.2rem' }}>{t(result.categoryLabelKey)}</p>
               <p className="small muted" style={{ margin: 0 }}>
-                Driven by: {result.narrative.join(', ')}.
+                Driven by: {result.narrative.map((n) => t(n)).join(', ')}.
               </p>
             </div>
           </div>
@@ -181,6 +183,7 @@ export default function SupportInsights() {
           ))}
 
           <span className="kicker" style={{ marginTop: '1.1rem' }}>RULES THAT FIRED ({result.firedRules.length} of {RULES.length})</span>
+          <p className="verify-note" style={{ marginTop: '-0.4rem', marginBottom: '0.6rem' }}>{t('how.rulesEnglishNote')}</p>
           {RULES.map((rule) => {
             const fired = result.firedRules.find((r) => r.id === rule.id)
             return (
@@ -196,7 +199,7 @@ export default function SupportInsights() {
           <span className="kicker" style={{ marginTop: '1.1rem' }}>WHAT DROVE IT</span>
           <div className="chip-row" style={{ marginBottom: '0.8rem' }}>
             {result.contributors.map((c) => (
-              <span className="chip" key={c.factor} style={{ cursor: 'default' }}>{c.factor} · {Math.round(c.weight * 100)}%</span>
+              <span className="chip" key={c.factorKey} style={{ cursor: 'default' }}>{t(c.factorKey)} · {Math.round(c.weight * 100)}%</span>
             ))}
           </div>
 
@@ -206,8 +209,8 @@ export default function SupportInsights() {
               <div className="flow-step" key={s.key}>
                 <span className="flow-step-num"><Waves size={13} /></span>
                 <span style={{ flex: 1 }}>
-                  <b>{s.label}</b>
-                  <small>{s.note}</small>
+                  <b>{t(s.labelKey)}</b>
+                  <small>{t(s.noteKey)}</small>
                 </span>
                 <Link className="btn btn-soft btn-sm" to={s.to}>Open <ArrowRight size={13} /></Link>
               </div>

@@ -1,23 +1,25 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Eraser, Trash2 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const SWATCHES = [
-  { name: 'Sage', hex: '#6e9169' },
-  { name: 'Mint', hex: '#a7c9a4' },
-  { name: 'Cream', hex: '#efe2bc' },
-  { name: 'Sky', hex: '#a9c6d9' },
-  { name: 'Amber', hex: '#dcae55' },
-  { name: 'Rose', hex: '#c07f7a' },
+  { key: 'sage', hex: '#6e9169' },
+  { key: 'mint', hex: '#a7c9a4' },
+  { key: 'cream', hex: '#efe2bc' },
+  { key: 'sky', hex: '#a9c6d9' },
+  { key: 'amber', hex: '#dcae55' },
+  { key: 'rose', hex: '#c07f7a' },
 ]
 const BRUSHES = [
-  { name: 'Thin', size: 4 },
-  { name: 'Medium', size: 9 },
-  { name: 'Thick', size: 18 },
+  { key: 'thin', size: 4 },
+  { key: 'medium', size: 9 },
+  { key: 'thick', size: 18 },
 ]
 
 export default function ColouringCanvas() {
   const { toast } = useApp()
+  const t = useT()
   const wrapRef = useRef(null)
   const canvasRef = useRef(null)
   const drawing = useRef(false)
@@ -115,26 +117,26 @@ export default function ColouringCanvas() {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     paintBackground(ctx, canvas.width, canvas.height)
-    toast('Fresh page — nice work taking a moment for yourself.')
+    toast(t('play.toast.freshPage'))
   }
 
   return (
     <div className="game-shell">
       <div className="play-tools">
-        <div className="palette-row" role="group" aria-label="Colours">
+        <div className="palette-row" role="group" aria-label={t('play.colour.colours')}>
           {SWATCHES.map((s) => (
             <button
               key={s.hex}
               type="button"
               className={`palette-swatch ${!eraser && color === s.hex ? 'palette-swatch-on' : ''}`}
               style={{ background: s.hex }}
-              aria-label={`${s.name} colour`}
+              aria-label={t('play.colour.swatchLabel', { name: t(`play.colour.swatches.${s.key}`) })}
               aria-pressed={!eraser && color === s.hex}
               onClick={() => { setColor(s.hex); setEraser(false) }}
             />
           ))}
         </div>
-        <div className="chip-row" role="group" aria-label="Brush size">
+        <div className="chip-row" role="group" aria-label={t('play.colour.brushSize')}>
           {BRUSHES.map((b) => (
             <button
               key={b.size}
@@ -143,7 +145,7 @@ export default function ColouringCanvas() {
               aria-pressed={brush === b.size && !eraser}
               onClick={() => { setBrush(b.size); setEraser(false) }}
             >
-              {b.name}
+              {t(`play.colour.brushes.${b.key}`)}
             </button>
           ))}
           <button
@@ -152,10 +154,10 @@ export default function ColouringCanvas() {
             aria-pressed={eraser}
             onClick={() => setEraser(true)}
           >
-            <Eraser size={14} /> Eraser
+            <Eraser size={14} /> {t('play.colour.eraser')}
           </button>
           <button type="button" className="btn btn-outline btn-sm" onClick={clearAll}>
-            <Trash2 size={14} /> Clear
+            <Trash2 size={14} /> {t('play.colour.clear')}
           </button>
         </div>
       </div>
@@ -163,7 +165,7 @@ export default function ColouringCanvas() {
         <canvas
           ref={canvasRef}
           className="colour-canvas"
-          aria-label="Drawing canvas"
+          aria-label={t('play.colour.canvasLabel')}
           role="img"
           onPointerDown={down}
           onPointerMove={move}
@@ -173,7 +175,7 @@ export default function ColouringCanvas() {
         />
       </div>
       <p className="tiny muted center" style={{ margin: '0.6rem 0 0' }}>
-        Draw with a mouse, finger or stylus. There is no wrong way to fill the page.
+        {t('play.colour.footer')}
       </p>
     </div>
   )

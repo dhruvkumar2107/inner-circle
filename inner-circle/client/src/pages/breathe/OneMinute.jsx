@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 import { speakGuide, speechSupport } from '../../lib/voice'
 import VoiceToggle from './VoiceToggle'
 
 const PHASES = [
-  { label: 'Breathe in…', type: 'breathe-in', ms: 4000 },
-  { label: 'Breathe out…', type: 'breathe-out', ms: 6000 },
+  { labelKey: 'breathe.phases.in', type: 'breathe-in', ms: 4000 },
+  { labelKey: 'breathe.phases.out', type: 'breathe-out', ms: 6000 },
 ]
 
 export default function OneMinute() {
+  const t = useT()
   const { settings, updateSettings, toast } = useApp()
   const totalMs = 60 * 1000
   const [running, setRunning] = useState(false)
@@ -41,7 +43,7 @@ export default function OneMinute() {
     if (elapsedPhase >= phase.ms) {
       const nextIndex = (phaseIndex + 1) % PHASES.length
       setPhaseIndex(nextIndex)
-      speakIfNeeded(PHASES[nextIndex].label)
+      speakIfNeeded(PHASES[nextIndex].labelKey)
       return
     }
     const phaseUsed = PHASES.reduce((acc, p, i) => (i < phaseIndex ? acc + p.ms : acc), 0)
@@ -53,11 +55,11 @@ export default function OneMinute() {
     setRemaining(newRemaining)
   }
 
-  const speakIfNeeded = (text) => {
+  const speakIfNeeded = (labelKey) => {
     if (!settings.voiceGuidance || !speechSupport().tts) return
-    if (lastSpokenRef.current === text) return
-    lastSpokenRef.current = text
-    speakGuide(text)
+    if (lastSpokenRef.current === labelKey) return
+    lastSpokenRef.current = labelKey
+    speakGuide(t(labelKey))
   }
 
   const start = () => {
@@ -68,7 +70,7 @@ export default function OneMinute() {
     phaseStartRef.current = Date.now()
     cycleRef.current = 0
     lastSpokenRef.current = null
-    speakIfNeeded(PHASES[0].label)
+    speakIfNeeded(PHASES[0].labelKey)
   }
 
   const pause = () => {
@@ -103,7 +105,7 @@ export default function OneMinute() {
     setPaused(false)
     setFinished(true)
     setRemaining(0)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('breathe.toastNiceWork'))
   }
 
   const currentPhase = PHASES[phaseIndex]
@@ -119,48 +121,48 @@ export default function OneMinute() {
           aria-hidden="true"
         />
         <div className="breath-label" aria-live="polite">
-          {running ? currentPhase.label : finished ? 'Done' : 'Ready'}
+          {running ? t(currentPhase.labelKey) : finished ? t('breathe.status.done') : t('breathe.status.ready')}
         </div>
         <div className="breath-timer" aria-live="polite">
           {mm}:{ss}
         </div>
         <div className="breath-instruction">
-          Follow the gentle rhythm. No need to force anything.
+          {t('breathe.oneMinute.instruction')}
         </div>
         <div className="ctrl-row">
           {!running && !finished && (
             <button type="button" className="btn btn-primary" onClick={start}>
-              Start
+              {t('common.start')}
             </button>
           )}
           {running && !paused && (
             <button type="button" className="btn btn-soft" onClick={pause}>
-              Pause
+              {t('breathe.controls.pause')}
             </button>
           )}
           {running && paused && (
             <button type="button" className="btn btn-soft" onClick={resume}>
-              Resume
+              {t('breathe.controls.resume')}
             </button>
           )}
           {running && (
             <button type="button" className="btn btn-outline" onClick={stop}>
-              Stop
+              {t('breathe.controls.stop')}
             </button>
           )}
           {finished && (
             <>
               <button type="button" className="btn btn-primary" onClick={reset}>
-                Start again
+                {t('breathe.controls.startAgain')}
               </button>
               <button type="button" className="btn btn-outline" onClick={stop}>
-                Reset
+                {t('breathe.controls.reset')}
               </button>
             </>
           )}
         </div>
         <div className="breath-instruction" style={{ marginTop: '0.4rem' }}>
-          You can stop and return to normal breathing whenever you like.
+          {t('breathe.safetyStop')}
         </div>
         <VoiceToggle
           enabled={settings.voiceGuidance}

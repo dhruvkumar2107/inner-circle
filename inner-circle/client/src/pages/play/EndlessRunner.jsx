@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Play, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const W = 640
 const H = 260
@@ -35,6 +36,7 @@ function makeObstacle(x) {
 
 export default function EndlessRunner({ best = 0, onBest }) {
   const { toast } = useApp()
+  const t = useT()
   const canvasRef = useRef(null)
   const wrapRef = useRef(null)
   const rafRef = useRef(0)
@@ -93,8 +95,8 @@ export default function EndlessRunner({ best = 0, onBest }) {
       setBestScore(final)
       onBestRef.current?.(final)
     }
-    toast('Nice work taking a moment for yourself.')
-  }, [toast])
+    toast(t('play.toast.niceWork'))
+  }, [toast, t])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -237,10 +239,10 @@ export default function EndlessRunner({ best = 0, onBest }) {
   return (
     <div className="game-shell">
       <div className="game-hud">
-        <span className="game-score">Score <b>{score}</b></span>
-        <span className="game-score">Best <b>{Math.max(bestScore, score)}</b></span>
+        <span className="game-score">{t('play.hud.score')} <b>{score}</b></span>
+        <span className="game-score">{t('play.hud.best')} <b>{Math.max(bestScore, score)}</b></span>
         {phase === 'playing' && (
-          <span className="tiny muted nowrap">Space / tap to jump</span>
+          <span className="tiny muted nowrap">{t('play.runner.jumpHint')}</span>
         )}
       </div>
       <div className="runner-wrap" ref={wrapRef}>
@@ -248,18 +250,18 @@ export default function EndlessRunner({ best = 0, onBest }) {
           ref={canvasRef}
           className="runner-canvas"
           role="img"
-          aria-label="Endless runner: a small round character jumping over bushes"
+          aria-label={t('play.runner.canvasLabel')}
           onPointerDown={(e) => { e.preventDefault(); onTap() }}
         />
         {phase === 'ready' && (
           <div className="runner-overlay" onPointerDown={(e) => e.stopPropagation()}>
             <div className="game-over">
-              <b>A gentle hop</b>
+              <b>{t('play.runner.readyTitle')}</b>
               <p className="small muted" style={{ margin: '0.3rem 0 0.9rem' }}>
-                Press Space or tap to jump over the bushes. No pressure — go as far as you like.
+                {t('play.runner.readyBody')}
               </p>
               <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <Play size={14} /> Start
+                <Play size={14} /> {t('common.start')}
               </button>
             </div>
           </div>
@@ -267,22 +269,24 @@ export default function EndlessRunner({ best = 0, onBest }) {
         {phase === 'over' && (
           <div className="runner-overlay" onPointerDown={(e) => e.stopPropagation()}>
             <div className="game-over">
-              <b>That was a nice run</b>
+              <b>{t('play.runner.overTitle')}</b>
               <p className="small muted" style={{ margin: '0.3rem 0 0.2rem' }}>
-                You covered <b>{score}</b> points{score >= bestScore && score > 0 ? ' — a new best!' : ` · best ${bestScore}`}.
+                {score >= bestScore && score > 0
+                  ? t('play.runner.overNewBest', { score })
+                  : t('play.runner.overBest', { score, best: bestScore })}
               </p>
               <p className="tiny muted" style={{ margin: '0 0 0.9rem' }}>
-                Take a breath, then go again whenever you're ready.
+                {t('play.runner.overHint')}
               </p>
               <button type="button" className="btn btn-primary btn-sm" onClick={start}>
-                <RotateCcw size={14} /> Restart
+                <RotateCcw size={14} /> {t('play.runner.restart')}
               </button>
             </div>
           </div>
         )}
       </div>
       <p className="tiny muted center" style={{ margin: '0.6rem 0 0' }}>
-        Space, Arrow&nbsp;Up or a tap to jump. The speed picks up a little as you go.
+        {t('play.runner.footer')}
       </p>
     </div>
   )

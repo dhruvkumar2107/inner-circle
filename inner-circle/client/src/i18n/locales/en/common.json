@@ -1,0 +1,70 @@
+{
+  "language": "Language",
+  "brandTagline": "a quiet space for students",
+  "close": "Close",
+  "dismiss": "Dismiss",
+  "tryAgain": "Try again",
+  "back": "Back",
+  "next": "Next",
+  "continue": "Continue",
+  "start": "Start",
+  "finish": "Finish",
+  "done": "Done",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "loading": "Loading…",
+  "optional": "Optional",
+  "student": "Student",
+  "demo": "Demo",
+  "simulated": "Simulated",
+  "planned": "Planned",
+  "comingSoon": "Coming soon",
+  "minutes": "min",
+  "score": "Score",
+  "of": "of",
+  "sttUnavailable": "Voice input isn't supported in this browser. Try Chrome or Edge, or type your message instead.",
+  "speechBlocked": "Microphone permission was blocked by the browser.",
+  "speechMissed": "I could not catch that — please try again.",
+  "emotions": {
+    "anxiety": "Anxiety signal",
+    "sadness": "Sadness signal",
+    "frustration": "Frustration signal",
+    "joy": "Positive / joy",
+    "fatigue": "Tiredness signal",
+    "relief": "Relief signal",
+    "loneliness": "Loneliness signal",
+    "neutral": "Neutral tone"
+  },
+  "sentiment": {
+    "positive": "Positive",
+    "neutral": "Neutral",
+    "negative": "Negative"
+  },
+  "topics": {
+    "academic": "Academic pressure",
+    "anxiety": "Anxiety",
+    "stress": "Stress",
+    "loneliness": "Loneliness",
+    "sleep": "Sleep",
+    "relationships": "Relationships",
+    "motivation": "Motivation",
+    "lowMood": "Low mood",
+    "general": "General wellbeing"
+  },
+  "safety": {
+    "kicker": "YOU DON'T HAVE TO BE ALONE",
+    "title": "Let's find the right support, right now.",
+    "bodyManual": "If you may be in immediate danger, contact emergency services or someone you trust now. Inner Circle is not an emergency service and is not monitored continuously.",
+    "bodyAssessment": "You indicated something on a safety-sensitive question, and that matters. Inner Circle is not monitored around the clock, so please reach out to a person directly.",
+    "safeContinue": "I'm safe for now — continue",
+    "deptContact": "Department contact",
+    "verifyNote": "Prototype numbers for India — verify every number, the campus counselling contact and the Department of Psychiatry details before launch.",
+    "resources": {
+      "teleManas": { "label": "Tele-MANAS", "detail": "India · 24×7 mental-health helpline" },
+      "kiran": { "label": "KIRAN helpline", "detail": "Government mental-health support" },
+      "emergency": { "label": "Emergency services", "detail": "If you may be in immediate danger right now" }
+    }
+  }
+}

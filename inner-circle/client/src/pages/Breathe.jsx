@@ -1,6 +1,7 @@
 import './Breathe.css'
 import { useSearchParams } from 'react-router-dom'
 import { PageHeader } from '../components/ui'
+import { useT } from '../i18n'
 import { EXERCISES } from './breathe/exercises'
 import ExerciseList from './breathe/ExerciseList'
 import OneMinute from './breathe/OneMinute'
@@ -11,6 +12,7 @@ import Mindfulness from './breathe/Mindfulness'
 import RelaxTimer from './breathe/RelaxTimer'
 
 export default function Breathe() {
+  const t = useT()
   const [params, setParams] = useSearchParams()
   const ex = params.get('ex')
   const valid = EXERCISES.some((e) => e.key === ex)
@@ -42,9 +44,9 @@ export default function Breathe() {
   return (
     <div className="page">
       <PageHeader
-        kicker="RELAXATION STUDIO"
-        title="Breathe & Reset"
-        sub="Short, gentle exercises. Stop whenever you like — returning to normal breathing is always fine."
+        kicker={t('breathe.kicker')}
+        title={t('breathe.title')}
+        sub={t('breathe.sub')}
       />
       <div className="breathe-layout">
         <div>

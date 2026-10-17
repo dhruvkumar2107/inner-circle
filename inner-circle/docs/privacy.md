@@ -1,28 +1,69 @@
 # Security and privacy
 
-## Data flow and access
+## What this prototype does with data
 
-Registration stores a name, email, password hash, optional student ID, optional college information, role, and anonymous alias. Passwords are hashed with bcrypt cost 12. Authenticated endpoints use short-lived signed access tokens and an HTTP-only refresh cookie. MongoDB persistence is optional in local development; otherwise accounts use an in-memory demo store. Screening summaries in the current client are stored in browser local storage and are demo-only.
+**The client prototype transmits nothing.** Every piece of demo state is written to this browser's
+`localStorage` and is never sent anywhere by the app's own code. The keys are:
 
-Forum responses are built from a strict public projection containing only post ID, author alias, post body, room, and creation time. Real name, email, student ID, and internal author ID are excluded. Professional and admin record-access workflows are not yet implemented; no student records should be used for those demo views.
+`ic.profile` · `ic.consents` · `ic.settings` · `ic.moods` · `ic.entries` · `ic.wins`
+· `ic.assessments` · `ic.messages` · `ic.appts` · `ic.lang` · `ic.reminder.lastFired`
+
+Clearing site data, or **Settings & Privacy → delete my data**, removes all of it. The password is
+kept only as a non-reversible demo hash, never in plain text. Everything here is demo data and must
+not be real student information.
+
+## Data leaves the device only in three, clearly-bounded ways
+
+| Situation | What leaves the device | Default |
+| --- | --- | --- |
+| Loading fonts | A request to Google Fonts (this discloses the visitor's IP to Google) | On — self-host the fonts to remove it |
+| Optional remote companion (`VITE_CHAT_ENDPOINT`) | The typed message, sent to the configured endpoint | Off — nothing is sent unless configured |
+| Optional remote sentiment (`VITE_SENTIMENT_ENDPOINT`) | The analysed text | Off |
+
+Turning a remote endpoint on is a deliberate configuration act and is a consent issue, not just a
+technical one: it means a student's words leave the browser. Crisis text is never sent to any remote
+endpoint — the crisis check runs locally first and short-circuits the network path entirely (see
+`docs/integration.md`).
+
+Opting into reminders requests the browser Notification permission. Notifications are generated
+locally, contain no personal content beyond a generic check-in nudge, and only fire while the app is
+open in the browser.
+
+## The server (integration reference, not used by the demo)
+
+The Express API stores a name, email, password hash (bcrypt cost 12), optional student ID, optional
+college information, role and anonymous alias. Authenticated endpoints use short-lived signed access
+tokens with an HTTP-only refresh cookie. MongoDB persistence is optional in development; otherwise
+accounts use an in-memory demo store. Its conversation endpoint returns a supportive reply plus
+sentiment, emotion, topic, a fuzzy risk tier, and a crisis flag.
+
+If and when the client is wired to the server, the note below applies to that flow.
 
 ## Threat model
 
 | Threat | Current mitigation | Remaining work |
 | --- | --- | --- |
-| Password disclosure | bcrypt cost 12; password is not returned by APIs | Password reset/email verification and production secret rotation |
-| Guessing or credential stuffing | Auth-specific rate limit; generic login errors; 5-failure lockout | Persistent distributed rate-limit and lockout storage |
-| Token theft | Short-lived access token; HTTP-only, SameSite refresh cookie; Helmet | CSRF review, rotation/revocation store, HTTPS deployment |
+| Password disclosure | bcrypt cost 12; password never returned by APIs | Password reset / email verification; production secret rotation |
+| Guessing or credential stuffing | Auth rate limit; generic login errors; five-failure lockout | Persistent distributed rate-limit and lockout storage |
+| Token theft | Short-lived access token; HTTP-only, SameSite refresh cookie; Helmet | CSRF review; rotation/revocation store; HTTPS deployment |
 | Cross-origin requests | Configured CORS allow-list | Verify deployed origins and proxy configuration |
-| Invalid input | Zod validation and JSON body-size limit | Broader endpoint schemas as modules are implemented |
-| PII exposure to peers | Alias generator and forum allow-list projection with privacy test | End-to-end API privacy tests for all future chat/analytics surfaces |
-| Misuse of screening outputs | Non-diagnostic copy and deterministic crisis override | Independent clinical, safety, and accessibility review |
-| Data loss or excess retention | Demo warns about volatile/local browser storage | Retention schedule, user export/deletion, encryption at rest |
+| Invalid input | Zod validation; JSON body-size limit | Broader endpoint schemas as modules are implemented |
+| Unwanted disclosure to a remote model | Remote adapters are off by default; crisis text is never sent | Written consent copy and a UI toggle before enabling remote models |
+| Third-party font request leaking visitor IP | Documented here | Self-host the fonts |
+| Misuse of screening outputs | Non-diagnostic copy; validated instrument wording; deterministic crisis override | Independent clinical, safety and accessibility review |
+| Data loss or excess retention | Everything is local and deletable; the demo warns that storage is volatile | Retention schedule, encryption at rest, audited export/deletion |
 
 ## Confidentiality limits
 
-The service should not promise absolute confidentiality. When a credible safety concern is identified, a designated professional may need to be notified and access should be minimal, assigned, and audit-logged. The production safety and audit workflows are not implemented in this demo.
+The service must not promise absolute confidentiality. Where a credible safety concern is identified,
+a designated professional may need to be notified, and access should be minimal, assigned and
+audit-logged. Those production safety and audit workflows are **not** implemented here.
 
 ## Before launch
 
-Do not use real student data until field-level encryption for journal/chat text, audited role-based professional access, k-anonymity suppression, account export/deletion, retention controls, security testing, HTTPS, and institution-approved crisis escalation are implemented and independently reviewed.
+Do not use real student data until: field-level encryption for journal and chat text; audited,
+role-based professional access; k-anonymity suppression for any analytics; account export and
+deletion; retention controls; security testing; HTTPS; self-hosted fonts; and institution-approved
+crisis escalation are implemented and independently reviewed. Every helpline number, the campus
+counselling contact and the Department of Psychiatry details displayed in the app are placeholders
+and must be verified.

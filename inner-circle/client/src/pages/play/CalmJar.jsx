@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const DOT_COUNT = 30
 const SHAKE_MS = 1500
@@ -23,6 +24,7 @@ const makeDots = () =>
 
 export default function CalmJar() {
   const { toast } = useApp()
+  const t = useT()
   const [phase, setPhase] = useState('rest')
   const [dots, setDots] = useState(makeDots)
   const timerA = useRef(0)
@@ -51,16 +53,16 @@ export default function CalmJar() {
     }, SHAKE_MS)
     timerB.current = setTimeout(() => {
       setPhase('rest')
-      toast('Watched it settle — nice work taking a moment for yourself.')
+      toast(t('play.toast.settled'))
     }, SHAKE_MS + SETTLE_MS)
   }
 
   const label =
     phase === 'shaking'
-      ? 'Swirling around…'
+      ? t('play.jar.shaking')
       : phase === 'settling'
-        ? 'Settling, nice and slowly…'
-        : 'All settled. Shake it whenever you need a pause.'
+        ? t('play.jar.settling')
+        : t('play.jar.rest')
 
   return (
     <div className="game-shell">
@@ -85,10 +87,10 @@ export default function CalmJar() {
         </div>
         <p className="small muted center" style={{ margin: 0, minHeight: '1.4em' }}>{label}</p>
         <button type="button" className="btn btn-primary" onClick={shake} disabled={phase === 'shaking'}>
-          <Sparkles size={15} /> Shake the jar
+          <Sparkles size={15} /> {t('play.jar.shake')}
         </button>
         <p className="tiny muted center" style={{ margin: 0 }}>
-          Watch the glitter drift down and find its rest — like thoughts settling on their own.
+          {t('play.jar.footer')}
         </p>
       </div>
     </div>

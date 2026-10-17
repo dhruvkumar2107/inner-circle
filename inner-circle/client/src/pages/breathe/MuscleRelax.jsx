@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
 const GROUPS = [
-  { id: 'toes', title: 'Toes', text: 'Curl your toes tight, then release.' },
-  { id: 'legs', title: 'Legs', text: 'Tighten your legs, then let them go heavy.' },
-  { id: 'shoulders', title: 'Shoulders', text: 'Lift and tense your shoulders, then drop them.' },
-  { id: 'hands', title: 'Hands', text: 'Make fists, then open and relax.' },
-  { id: 'face', title: 'Face', text: 'Scrunch your face, then soften.' },
+  { id: 'toes', titleKey: 'breathe.muscle.groups.toes.title', tenseKey: 'breathe.muscle.groups.toes.tense' },
+  { id: 'legs', titleKey: 'breathe.muscle.groups.legs.title', tenseKey: 'breathe.muscle.groups.legs.tense' },
+  { id: 'shoulders', titleKey: 'breathe.muscle.groups.shoulders.title', tenseKey: 'breathe.muscle.groups.shoulders.tense' },
+  { id: 'hands', titleKey: 'breathe.muscle.groups.hands.title', tenseKey: 'breathe.muscle.groups.hands.tense' },
+  { id: 'face', titleKey: 'breathe.muscle.groups.face.title', tenseKey: 'breathe.muscle.groups.face.tense' },
 ]
 
 export default function MuscleRelax({ stepMs = 5000 }) {
+  const t = useT()
   const { toast } = useApp()
   const [index, setIndex] = useState(0)
   const [phase, setPhase] = useState('tense') // tense or release or done
@@ -80,7 +82,7 @@ export default function MuscleRelax({ stepMs = 5000 }) {
     if (timerRef.current) clearInterval(timerRef.current)
     setRunning(false)
     setDone(true)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('breathe.toastNiceWork'))
   }
 
   const reset = () => {
@@ -99,10 +101,10 @@ export default function MuscleRelax({ stepMs = 5000 }) {
     return (
       <div className="card card-pad">
         <div className="breath-stage">
-          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>All groups relaxed</h2>
-          <p className="breath-instruction">Take a moment. You can stop and return to normal breathing whenever you like.</p>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)' }}>{t('breathe.muscle.doneTitle')}</h2>
+          <p className="breath-instruction">{t('breathe.muscle.doneBody')}</p>
           <button type="button" className="btn btn-primary" onClick={reset}>
-            Start again
+            {t('breathe.controls.startAgain')}
           </button>
         </div>
       </div>
@@ -113,32 +115,32 @@ export default function MuscleRelax({ stepMs = 5000 }) {
     <div className="card card-pad">
       <div className="step-card">
         <h3>
-          {group.title} · {index + 1}/{GROUPS.length}
+          {t(group.titleKey)} · {index + 1}/{GROUPS.length}
         </h3>
-        <p>{phase === 'tense' ? `Tense: ${group.text.split(',')[0].toLowerCase()}` : 'Release and soften'}</p>
+        <p>{phase === 'tense' ? t('breathe.muscle.tenseLine', { action: t(group.tenseKey) }) : t('breathe.muscle.release')}</p>
         <div className="breath-timer" style={{ textAlign: 'center', margin: '0.6rem 0' }}>
           {secs}s
         </div>
         <div className="ctrl-row">
           <button type="button" className="btn btn-ghost" onClick={back} disabled={index === 0}>
-            Back
+            {t('common.back')}
           </button>
           {!running && (
             <button type="button" className="btn btn-primary" onClick={start}>
-              {index === 0 ? 'Start' : 'Resume'}
+              {index === 0 ? t('common.start') : t('breathe.controls.resume')}
             </button>
           )}
           {running && (
             <button type="button" className="btn btn-soft" onClick={skip}>
-              Skip
+              {t('breathe.controls.skip')}
             </button>
           )}
           <button type="button" className="btn btn-outline" onClick={finish}>
-            Done
+            {t('common.done')}
           </button>
         </div>
       </div>
-      <div className="breath-instruction">You can stop and return to normal breathing whenever you like.</div>
+      <div className="breath-instruction">{t('breathe.safetyStop')}</div>
     </div>
   )
 }

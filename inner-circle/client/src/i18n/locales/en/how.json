@@ -1,0 +1,48 @@
+{
+  "rulesEnglishNote": "The technical rule descriptions below are shown in English for transparency of the explainability trace.",
+  "category": {
+    "lower": "Lower reported symptom severity",
+    "moderate": "Moderate reported symptom severity",
+    "elevated": "Moderate-to-higher reported symptoms",
+    "high": "Higher reported symptom severity"
+  },
+  "contributor": {
+    "phq9": "PHQ-9 screening responses",
+    "gad7": "GAD-7 screening responses",
+    "sentiment": "Recent emotional expression",
+    "stress": "Self-reported stress",
+    "functional": "Effect on daily activities"
+  },
+  "narrative": {
+    "mood": "mood-related concerns in your screening responses",
+    "anxiety": "anxiety-related concerns in your screening responses",
+    "stressHigh": "elevated stress",
+    "sentimentNeg": "recently expressed difficult feelings",
+    "functionalHigh": "daily activities feeling more affected",
+    "lower": "indicators within the lower range"
+  },
+  "suggestion": {
+    "professionalNow": "Reach a person now",
+    "talk": "Talk to your companion",
+    "breathe": "Relaxation and self-care activities",
+    "mood": "Repeat a check-in when it suits you",
+    "talkSupportive": "Supportive AI conversation",
+    "breatheGrounding": "Grounding or breathing exercise",
+    "moodSooner": "Repeat this check-in sooner",
+    "professionalConsider": "Consider contacting a professional",
+    "professionalContact": "Contact a qualified professional",
+    "talkNow": "Talk to your companion now",
+    "breatheGentle": "A gentle calming exercise",
+    "noteProfessionalNow": "Urgent support options come first.",
+    "noteTalk": "A supportive conversation while you decide on the next step.",
+    "noteBreathe": "Keep the small habits that are working.",
+    "noteMood": "A weekly rhythm is plenty for lower-range results.",
+    "noteTalkSupportive": "Talk through what is driving these feelings.",
+    "noteBreatheGrounding": "Short daily practice can lower the background noise.",
+    "noteMoodSooner": "Re-check in a few days to see which direction things are moving.",
+    "noteProfessionalConsider": "A qualified person can confirm what these results mean.",
+    "noteProfessionalContact": "The Department of Psychiatry at DSU can guide you.",
+    "noteTalkNow": "You do not have to carry this alone while you arrange support.",
+    "noteBreatheGentle": "Something small to steady the next hour."
+  }
+}

@@ -2,20 +2,13 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 import { ArrowRight, CalendarClock, ClipboardCheck, HeartHandshake, MessageCircle, ShieldAlert, ShieldCheck, Wind } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { Badge, CRISIS_RESOURCES, Note, PageHeader, SectionTitle } from '../components/ui'
-import { DIFFICULTY_RESPONSES, DISCLAIMER, GAD7_MAX, PHQ9_MAX, severityFor } from '../lib/screening'
+import { DIFFICULTY_RESPONSES, DISCLAIMER_KEY, GAD7_MAX, PHQ9_MAX, severityFor } from '../lib/screening'
 import { longDate, timeOf } from '../lib/storage'
+import { useT } from '../i18n'
 
 const BANDS = {
   phq9: ['Minimal', 'Mild', 'Moderate', 'Moderately severe', 'Severe'],
   gad7: ['Minimal', 'Mild', 'Moderate', 'Severe'],
-}
-
-const BAND_MEANING = {
-  Minimal: 'The symptoms you reported are in the lowest range.',
-  Mild: 'Some symptoms are showing up — worth keeping an eye on, and easy to start with small habits.',
-  Moderate: 'Reported symptoms are sitting in the middle range. Support can make a real difference here.',
-  'Moderately severe': 'Reported symptoms are toward the higher end. Talking to a qualified person is a sensible next step.',
-  Severe: 'You reported a high level of symptoms. A qualified professional can help you sort out what this means.',
 }
 
 export default function AssessmentResult() {
@@ -23,6 +16,7 @@ export default function AssessmentResult() {
   const location = useLocation()
   const navigate = useNavigate()
   const { assessments, openSafety } = useApp()
+  const t = useT()
 
   if (type !== 'phq9' && type !== 'gad7') return <Navigate to="/assessments" replace />
 
@@ -36,7 +30,7 @@ export default function AssessmentResult() {
   const pct = Math.round((record.score / max) * 100)
   const tone = record.severity?.tone || severityFor(type, record.score).tone
   const bands = BANDS[type]
-  const difficultyLabel = DIFFICULTY_RESPONSES[record.difficulty]?.label || 'Not given'
+  const difficultyLabel = record.difficulty != null ? t(DIFFICULTY_RESPONSES[record.difficulty]?.labelKey || 'screening.difficulty.notAtAll') : 'Not given'
   const isHigh = tone === 'high' || record.safety
 
   return (
@@ -79,11 +73,8 @@ export default function AssessmentResult() {
               <span>{record.score}<small>of {max}</small></span>
             </span>
             <div>
-              <span className={`band-pill band-${tone}`}>{record.severity?.short}</span>
-              <p className="lead" style={{ margin: '0.6rem 0 0.3rem' }}>{record.severity?.label}</p>
-              <p className="small muted" style={{ margin: 0 }}>
-                {BAND_MEANING[record.severity?.short] || ''}
-              </p>
+              <span className={`band-pill band-${tone}`}>{t(record.severity?.shortKey || 'screening.severity.minimal.short')}</span>
+              <p className="lead" style={{ margin: '0.6rem 0 0.3rem' }}>{t(record.severity?.labelKey || 'screening.severity.minimal.label')}</p>
             </div>
           </div>
           <p className="verify-note" style={{ marginTop: '1rem' }}>
@@ -95,13 +86,13 @@ export default function AssessmentResult() {
           <span className="kicker">WHERE THIS SITS</span>
           <div className="chip-row" style={{ marginBottom: '0.8rem' }}>
             {bands.map((band) => (
-              <span key={band} className={`chip ${band === record.severity?.short ? 'chip-on' : ''}`} style={{ cursor: 'default' }}>
-                {band}
-              </span>
+                <span key={band} className={`chip ${t(record.severity?.shortKey || 'screening.severity.minimal.short') === t(`screening.severity.${(band === 'Moderately severe') ? 'moderatelySevere' : band.toLowerCase()}.short`) ? 'chip-on' : ''}`} style={{ cursor: 'default' }}>
+                  {t(`assessments.bandTable.${band === 'Moderately severe' ? '15–19' : band === 'Severe' ? (type === 'phq9' ? '20–27' : '15–21') : band === 'Minimal' ? '0–4' : band === 'Mild' ? '5–9' : band === 'Moderate' ? '10–14' : band}`)}
+                </span>
             ))}
           </div>
           <Note tone="mint" icon={ShieldCheck}>
-            {DISCLAIMER} The bands are the standard published ranges for{' '}
+            {t(DISCLAIMER_KEY)} The bands are the standard published ranges for{' '}
             {type === 'phq9' ? 'the PHQ-9' : 'the GAD-7'} — they describe reported symptom level, and
             only a qualified professional can interpret what it means for you.
           </Note>

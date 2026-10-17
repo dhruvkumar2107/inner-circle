@@ -1,0 +1,79 @@
+{
+  "kicker": "PROFESSIONAL SUPPORT",
+  "title": "Contact a Professional",
+  "sub": "Reach {{department}} at {{university}}, and find urgent support whenever you need it.",
+  "urgentNoteBefore": "You asked for urgent support, so those options are shown above. If you closed the panel, use",
+  "urgentNoteAfter": "below whenever you want them again.",
+  "hero": {
+    "kicker": "THE TEAM BEHIND INNER CIRCLE",
+    "officeTimings": "Counselling office: {{timings}}",
+    "lead": "A qualified professional can tell you what your screening results actually mean — Inner Circle never can.",
+    "badge": "Demo — placeholder details"
+  },
+  "team": {
+    "title": "Who you could speak with",
+    "sub": "Three placeholder profiles shared with Inner Circle by the department.",
+    "cardTitle": "{{role}} · placeholder profile",
+    "nameLabel": "Name: {{name}}",
+    "contactLabel": "Contact: {{phone}} · {{email}}",
+    "request": "Request an appointment",
+    "verifyNote": "Placeholder profiles — real names, timings and official contact details will be added by the university before launch."
+  },
+  "roles": {
+    "consultant": "Consultant Psychiatrist",
+    "counselling": "Counselling Psychologist",
+    "clinical": "Clinical Psychologist"
+  },
+  "days": {
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday"
+  },
+  "slots": {
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening"
+  },
+  "appts": {
+    "title": "Your appointment requests",
+    "sub": "Saved only in this browser — nothing is sent to the department in this prototype.",
+    "emptyTitle": "No requests yet",
+    "emptyBody": "Pick a profile above and ask for a slot. Your requests will appear here so you can review or cancel them.",
+    "cancel": "Cancel",
+    "cancelAria": "Cancel request for {{day}}, {{slot}}",
+    "toastRemoved": "Request removed."
+  },
+  "steps": {
+    "title": "What happens next",
+    "oneTitle": "Your request is recorded here",
+    "oneBody": "Demo only — it is saved on this device and never sent to the department.",
+    "twoTitle": "The department would confirm a slot directly with you",
+    "twoBody": "In the live version, someone from the department gets in touch with a time that suits you.",
+    "threeTitle": "What you share in a session stays private",
+    "threeBody": "Inner Circle only stores what you choose to save on this device."
+  },
+  "crisis": {
+    "title": "If you may be in immediate danger now",
+    "sub": "Reach a real person straight away — you never have to wait for the app.",
+    "verifyNote": "Helpline numbers can change — verify every number before you rely on it, and check the department's official contact details once the university confirms them.",
+    "note": "Inner Circle is not monitored 24/7 and is not an emergency service. If you may be in immediate danger, contact emergency services or someone you trust right now."
+  },
+  "modal": {
+    "kicker": "APPOINTMENT REQUEST",
+    "title": "Request an appointment",
+    "intro": "A demo request kept on this device only{{role}}. The department is not contacted automatically.",
+    "errorName": "Please enter your full name so the department knows who to contact.",
+    "fullName": "Full name",
+    "namePlaceholder": "Your full name",
+    "day": "Preferred day",
+    "slot": "Preferred time slot",
+    "note": "Anything you would like to add",
+    "notePlaceholder": "A short note for the department",
+    "ack": "I understand this is a prototype request, stored only on this device",
+    "submit": "Record my request",
+    "toastRecorded": "Appointment request recorded (demo)."
+  }
+}

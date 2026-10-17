@@ -1,4 +1,7 @@
+import { useT } from '../../i18n'
+
 export default function VoiceToggle({ enabled, onChange }) {
+  const t = useT()
   return (
     <div className="toggle-row">
       <button
@@ -6,9 +9,9 @@ export default function VoiceToggle({ enabled, onChange }) {
         className={`switch ${enabled ? 'on' : ''}`}
         onClick={() => onChange(!enabled)}
         aria-pressed={enabled}
-        aria-label="Toggle voice guidance"
+        aria-label={t('breathe.voice.toggleAria')}
       />
-      <span>Voice guidance {enabled ? 'on' : 'off'}</span>
+      <span>{enabled ? t('breathe.voice.on') : t('breathe.voice.off')}</span>
     </div>
   )
 }

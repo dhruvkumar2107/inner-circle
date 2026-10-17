@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Grid2x2, Heart, Layers, Leaf, Palette, Rabbit, Sparkles, Target, Trophy } from 'lucide-react'
 import { Badge, Modal, Note, PageHeader, SectionTitle } from '../components/ui'
+import { useT } from '../i18n'
 import EndlessRunner from './play/EndlessRunner'
 import MatchThree from './play/MatchThree'
 import MemoryGame from './play/MemoryGame'
@@ -12,31 +13,32 @@ import PositiveMoment from './play/PositiveMoment'
 import './PlayRelax.css'
 
 const GAMES = [
-  { key: 'runner', icon: Rabbit, title: 'Endless runner', body: 'Hop a little round friend over soft bushes. Your score climbs with distance.' },
-  { key: 'match', icon: Grid2x2, title: 'Match-three', body: 'Swap neighbouring tiles to line up three or more, all in calm colours.' },
-  { key: 'memory', icon: Layers, title: 'Memory match', body: 'Find all eight pairs on a 4×4 board. Slow and steady absolutely counts.' },
-  { key: 'focus', icon: Target, title: 'Focus reaction', body: 'A 20-second round of soft targets. Tap them as they drift in — no rush.' },
+  { key: 'runner', icon: Rabbit },
+  { key: 'match', icon: Grid2x2 },
+  { key: 'memory', icon: Layers },
+  { key: 'focus', icon: Target },
 ]
 
 const ACTIVITIES = [
-  { key: 'colour', icon: Palette, title: 'Colouring canvas', body: 'Colour a blank page with the Inner Circle palette. No skill required.' },
-  { key: 'jar', icon: Sparkles, title: 'Calm jar', body: 'Shake the jar and watch the glitter settle — like thoughts settling too.' },
-  { key: 'mindful', icon: Leaf, title: 'Short mindfulness', body: 'Three tiny prompts — sounds, contact, breath. About one quiet minute.' },
-  { key: 'moment', icon: Heart, title: 'Positive moment', body: 'Write down one good thing and keep it in your mood journey.' },
+  { key: 'colour', icon: Palette },
+  { key: 'jar', icon: Sparkles },
+  { key: 'mindful', icon: Leaf },
+  { key: 'moment', icon: Heart },
 ]
 
 const MODAL_META = {
-  runner: { kicker: 'MINI-GAME', title: 'Endless runner', wide: true },
-  match: { kicker: 'MINI-GAME', title: 'Match-three' },
-  memory: { kicker: 'MINI-GAME', title: 'Memory match' },
-  focus: { kicker: 'MINI-GAME', title: 'Focus reaction' },
-  colour: { kicker: 'RELAX', title: 'Colouring canvas', wide: true },
-  jar: { kicker: 'RELAX', title: 'Calm jar' },
-  mindful: { kicker: 'RELAX', title: 'Short mindfulness' },
-  moment: { kicker: 'RELAX', title: 'Positive moment' },
+  runner: { kicker: 'miniGame', wide: true },
+  match: { kicker: 'miniGame' },
+  memory: { kicker: 'miniGame' },
+  focus: { kicker: 'miniGame' },
+  colour: { kicker: 'relax', wide: true },
+  jar: { kicker: 'relax' },
+  mindful: { kicker: 'relax' },
+  moment: { kicker: 'relax' },
 }
 
 export default function PlayRelax() {
+  const t = useT()
   const [open, setOpen] = useState(null)
   const [bests, setBests] = useState({ runner: 0, match: 0, memory: null, focus: 0 })
 
@@ -54,7 +56,7 @@ export default function PlayRelax() {
     return (
       <Badge tone="mint" className="play-best">
         <Trophy size={12} />
-        {key === 'memory' ? `Best: ${value} moves` : `Best: ${value}`}
+        {key === 'memory' ? t('play.best.moves', { value }) : t('play.best.score', { value })}
       </Badge>
     )
   }
@@ -64,22 +66,20 @@ export default function PlayRelax() {
   return (
     <div className="page">
       <PageHeader
-        kicker="ACTIVITIES"
-        title="Play & Relax"
-        sub="A calm activity corner — take a break, then get on with your day."
+        kicker={t('play.header.kicker')}
+        title={t('play.header.title')}
+        sub={t('play.header.sub')}
       />
 
       <div className="play-note">
         <Note tone="mint" icon={Leaf}>
-          These activities are here for a gentle pause or a bit of distraction. They are not treatment
-          and they do not cure anything — if things feel heavy, please talk to someone you trust or
-          reach out for professional support.
+          {t('play.note')}
         </Note>
       </div>
 
-      <SectionTitle title="Mini-games" sub="Light distractions for when you need a few minutes away from everything." />
+      <SectionTitle title={t('play.sections.games.title')} sub={t('play.sections.games.sub')} />
       <div className="grid grid-2">
-        {GAMES.map(({ key, icon: Icon, title, body }) => (
+        {GAMES.map(({ key, icon: Icon }) => (
           <div
             key={key}
             className="card card-click feature-card play-card"
@@ -89,18 +89,18 @@ export default function PlayRelax() {
               <span className="feature-icon"><Icon size={19} /></span>
               {bestChip(key)}
             </span>
-            <b>{title}</b>
-            <p>{body}</p>
+            <b>{t(`play.games.${key}.title`)}</b>
+            <p>{t(`play.games.${key}.body`)}</p>
             <button type="button" className="btn btn-soft btn-sm" onClick={() => setOpen(key)}>
-              Start
+              {t('common.start')}
             </button>
           </div>
         ))}
       </div>
 
-      <SectionTitle title="Relaxing activities" sub="Quieter ways to slow down for a moment." />
+      <SectionTitle title={t('play.sections.relax.title')} sub={t('play.sections.relax.sub')} />
       <div className="grid grid-2">
-        {ACTIVITIES.map(({ key, icon: Icon, title, body }) => (
+        {ACTIVITIES.map(({ key, icon: Icon }) => (
           <div
             key={key}
             className="card card-click feature-card play-card"
@@ -109,17 +109,22 @@ export default function PlayRelax() {
             <span className="play-card-top">
               <span className="feature-icon"><Icon size={19} /></span>
             </span>
-            <b>{title}</b>
-            <p>{body}</p>
+            <b>{t(`play.games.${key}.title`)}</b>
+            <p>{t(`play.games.${key}.body`)}</p>
             <button type="button" className="btn btn-soft btn-sm" onClick={() => setOpen(key)}>
-              Open
+              {t('play.buttons.open')}
             </button>
           </div>
         ))}
       </div>
 
       {open && meta && (
-        <Modal kicker={meta.kicker} title={meta.title} wide={Boolean(meta.wide)} onClose={() => setOpen(null)}>
+        <Modal
+          kicker={t(`play.kicker.${meta.kicker}`)}
+          title={t(`play.games.${open}.title`)}
+          wide={Boolean(meta.wide)}
+          onClose={() => setOpen(null)}
+        >
           {open === 'runner' && (
             <EndlessRunner
               best={bests.runner}
@@ -153,8 +158,7 @@ export default function PlayRelax() {
 
       <div style={{ marginTop: '1.6rem' }}>
         <Note tone="grey">
-          Everything here runs only on this device. Scores are just for fun — there is nothing to
-          lose and no reason to rush.
+          {t('play.footerNote')}
         </Note>
       </div>
     </div>

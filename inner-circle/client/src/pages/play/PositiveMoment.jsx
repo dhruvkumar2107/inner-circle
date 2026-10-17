@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { Heart, Plus, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 
-const PROMPTS = [
-  'A friend messaged at the right moment…',
-  'I finished something I had been putting off…',
-  'The weather felt good on a walk…',
-  'I was kind to myself, just once…',
-]
+const PROMPTS = [0, 1, 2, 3]
 
 export default function PositiveMoment() {
   const { addWin, toast } = useApp()
+  const t = useT()
   const [text, setText] = useState('')
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -19,14 +16,14 @@ export default function PositiveMoment() {
     e.preventDefault()
     const value = text.trim()
     if (!value) {
-      setError('Write a line or two — even a few words are enough.')
+      setError(t('play.moment.error'))
       return
     }
     addWin(value)
     setError('')
     setText('')
     setSaved(true)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('play.toast.niceWork'))
   }
 
   const again = () => {
@@ -40,13 +37,12 @@ export default function PositiveMoment() {
       <div className="game-shell">
         <div className="mind-panel center">
           <span className="mind-done-icon"><Heart size={22} /></span>
-          <h3 style={{ marginTop: '0.6rem' }}>Nice work taking a moment for yourself</h3>
+          <h3 style={{ marginTop: '0.6rem' }}>{t('play.moment.savedTitle')}</h3>
           <p className="small muted" style={{ maxWidth: '40ch', margin: '0 auto' }}>
-            Your moment is saved to your mood journey. Small good things are worth writing down —
-            they add up more than we expect.
+            {t('play.moment.savedBody')}
           </p>
           <button type="button" className="btn btn-soft btn-sm" style={{ marginTop: '1rem' }} onClick={again}>
-            <Plus size={14} /> Add another
+            <Plus size={14} /> {t('play.moment.addAnother')}
           </button>
         </div>
       </div>
@@ -57,8 +53,7 @@ export default function PositiveMoment() {
     <div className="game-shell">
       <form onSubmit={save} noValidate>
         <p className="small muted" style={{ marginTop: 0 }}>
-          What is one small good thing from today? It can be tiny — a sip of good chai, a song, a
-          message that landed well.
+          {t('play.moment.intro')}
         </p>
         {error && (
           <div className="form-error" role="alert">
@@ -66,12 +61,12 @@ export default function PositiveMoment() {
           </div>
         )}
         <div className="field">
-          <label htmlFor="win-text">Your positive moment</label>
+          <label htmlFor="win-text">{t('play.moment.label')}</label>
           <textarea
             id="win-text"
             className="input"
             rows={3}
-            placeholder="Today, something good was…"
+            placeholder={t('play.moment.placeholder')}
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
@@ -82,14 +77,14 @@ export default function PositiveMoment() {
               key={p}
               type="button"
               className="chip"
-              onClick={() => setText((t) => (t ? `${t} ${p}` : p))}
+              onClick={() => setText((val) => (val ? `${val} ${t(`play.moment.prompts.${p}`)}` : t(`play.moment.prompts.${p}`)))}
             >
-              {p}
+              {t(`play.moment.prompts.${p}`)}
             </button>
           ))}
         </div>
         <button type="submit" className="btn btn-primary">
-          <Heart size={15} /> Save this moment
+          <Heart size={15} /> {t('play.moment.save')}
         </button>
         <button
           type="button"
@@ -97,11 +92,11 @@ export default function PositiveMoment() {
           style={{ marginLeft: '0.5rem' }}
           onClick={again}
         >
-          <RotateCcw size={14} /> Clear
+          <RotateCcw size={14} /> {t('play.moment.clear')}
         </button>
       </form>
       <p className="tiny muted" style={{ marginTop: '0.8rem' }}>
-        Saved only in this browser, alongside your other tiny wins.
+        {t('play.moment.footer')}
       </p>
     </div>
   )

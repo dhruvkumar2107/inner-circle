@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../../context/AppContext'
+import { useT } from '../../i18n'
 import { speakGuide, speechSupport } from '../../lib/voice'
 import VoiceToggle from './VoiceToggle'
 
 const BOX = [
-  { label: 'Inhale…', type: 'breathe-in', ms: 4000 },
-  { label: 'Hold…', type: 'breathe-hold', ms: 4000 },
-  { label: 'Exhale…', type: 'breathe-out', ms: 4000 },
-  { label: 'Hold…', type: 'breathe-hold', ms: 4000 },
+  { labelKey: 'breathe.phases.inhale', type: 'breathe-in', ms: 4000 },
+  { labelKey: 'breathe.phases.hold', type: 'breathe-hold', ms: 4000 },
+  { labelKey: 'breathe.phases.exhale', type: 'breathe-out', ms: 4000 },
+  { labelKey: 'breathe.phases.hold', type: 'breathe-hold', ms: 4000 },
 ]
 
 export default function BoxBreathing({ durationMs = 90 * 1000 }) {
+  const t = useT()
   const { settings, updateSettings, toast } = useApp()
   const [running, setRunning] = useState(false)
   const [paused, setPaused] = useState(false)
@@ -38,7 +40,7 @@ export default function BoxBreathing({ durationMs = 90 * 1000 }) {
     if (elapsedPhase >= phase.ms) {
       const nextIndex = (phaseIndex + 1) % BOX.length
       setPhaseIndex(nextIndex)
-      speakIfNeeded(BOX[nextIndex].label)
+      speakIfNeeded(BOX[nextIndex].labelKey)
       return
     }
     const newRemaining = Math.max(0, remaining - 200)
@@ -48,11 +50,11 @@ export default function BoxBreathing({ durationMs = 90 * 1000 }) {
     }
   }
 
-  const speakIfNeeded = (text) => {
+  const speakIfNeeded = (labelKey) => {
     if (!settings.voiceGuidance || !speechSupport().tts) return
-    if (lastSpokenRef.current === text) return
-    lastSpokenRef.current = text
-    speakGuide(text)
+    if (lastSpokenRef.current === labelKey) return
+    lastSpokenRef.current = labelKey
+    speakGuide(t(labelKey))
   }
 
   const start = () => {
@@ -64,7 +66,7 @@ export default function BoxBreathing({ durationMs = 90 * 1000 }) {
     totalElapsedRef.current = 0
     lastSpokenRef.current = null
     phaseStartRef.current = Date.now()
-    speakIfNeeded(BOX[0].label)
+    speakIfNeeded(BOX[0].labelKey)
   }
 
   const pause = () => {
@@ -95,7 +97,7 @@ export default function BoxBreathing({ durationMs = 90 * 1000 }) {
     setPaused(false)
     setFinished(true)
     setRemaining(0)
-    toast('Nice work taking a moment for yourself.')
+    toast(t('breathe.toastNiceWork'))
   }
 
   const currentPhase = BOX[phaseIndex]
@@ -108,48 +110,48 @@ export default function BoxBreathing({ durationMs = 90 * 1000 }) {
       <div className="breath-stage">
         <div className={`breath-circle ${running && !paused ? currentPhase.type : ''}`} aria-hidden="true" />
         <div className="breath-label" aria-live="polite">
-          {running ? currentPhase.label : finished ? 'Done' : 'Ready'}
+          {running ? t(currentPhase.labelKey) : finished ? t('breathe.status.done') : t('breathe.status.ready')}
         </div>
         <div className="breath-timer" aria-live="polite">
           {mm}:{ss}
         </div>
         <div className="breath-instruction">
-          4-4-4-4 box breathing. Holding is optional — return to normal breathing whenever you like.
+          {t('breathe.box.instruction')}
         </div>
         <div className="ctrl-row">
           {!running && !finished && (
             <button type="button" className="btn btn-primary" onClick={start}>
-              Start
+              {t('common.start')}
             </button>
           )}
           {running && !paused && (
             <button type="button" className="btn btn-soft" onClick={pause}>
-              Pause
+              {t('breathe.controls.pause')}
             </button>
           )}
           {running && paused && (
             <button type="button" className="btn btn-soft" onClick={resume}>
-              Resume
+              {t('breathe.controls.resume')}
             </button>
           )}
           {running && (
             <button type="button" className="btn btn-outline" onClick={stop}>
-              Stop
+              {t('breathe.controls.stop')}
             </button>
           )}
           {finished && (
             <>
               <button type="button" className="btn btn-primary" onClick={start}>
-                Start again
+                {t('breathe.controls.startAgain')}
               </button>
               <button type="button" className="btn btn-outline" onClick={stop}>
-                Reset
+                {t('breathe.controls.reset')}
               </button>
             </>
           )}
         </div>
         <div className="breath-instruction" style={{ marginTop: '0.4rem' }}>
-          You can stop and return to normal breathing whenever you like.
+          {t('breathe.safetyStop')}
         </div>
         <VoiceToggle enabled={settings.voiceGuidance} onChange={(v) => updateSettings({ voiceGuidance: v })} />
       </div>
