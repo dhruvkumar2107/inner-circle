@@ -84,6 +84,17 @@ Remote chat is never used for crisis text. Full contract, consent and privacy ob
 server. The static prototype needs no environment variables; the serverless API needs its own
 (for example `MONGO_URI`).
 
+## Tests and static assets
+
+`npm test` runs two suites: the server's Jest tests and the client's Node built-in-runner tests
+(`client/test/*.test.mjs`). The client suite needs no extra dependencies and covers the pure domain
+logic — fuzzy inference, screening bands, multilingual sentiment/crisis detection, the chess rules,
+the companion engine and i18n key parity. The browser-only behaviour (rendering, speech, reminders)
+is covered by the manual checklist in `docs/manual-qa.md`.
+
+Fonts are self-hosted: `scripts/fetch-fonts.mjs` writes `client/src/styles/fonts.css` and downloads
+the `.woff2` files into `client/public/fonts/`, so the app makes no third-party font request.
+
 ## Research positioning
 
 Validated psychological screening (PHQ-9 / GAD-7) + transparent **fuzzy risk inference** +

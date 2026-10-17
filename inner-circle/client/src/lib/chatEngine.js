@@ -15,7 +15,7 @@
  * backend endpoint (e.g. POST /api/chat) while keeping the same return shape.
  */
 
-import { analyze, checkCrisis, topicKey } from './sentiment'
+import { analyze, checkCrisis, topicKey } from './sentiment.js'
 
 const pick = (list, seed) => list[Math.abs(seed) % list.length]
 

@@ -12,13 +12,17 @@ Clearing site data, or **Settings & Privacy → delete my data**, removes all of
 kept only as a non-reversible demo hash, never in plain text. Everything here is demo data and must
 not be real student information.
 
-## Data leaves the device only in three, clearly-bounded ways
+## Data leaves the device only in two, clearly-bounded ways
 
 | Situation | What leaves the device | Default |
 | --- | --- | --- |
-| Loading fonts | A request to Google Fonts (this discloses the visitor's IP to Google) | On — self-host the fonts to remove it |
+| Fonts | Nothing — the app self-hosts its fonts in `client/public/fonts` (no request to Google or any third party) | Off (no outbound request) |
 | Optional remote companion (`VITE_CHAT_ENDPOINT`) | The typed message, sent to the configured endpoint | Off — nothing is sent unless configured |
 | Optional remote sentiment (`VITE_SENTIMENT_ENDPOINT`) | The analysed text | Off |
+
+With no environment variables set — the shipped default — the app makes **no
+network requests at all** after the page loads. The fonts are served from the same
+origin via `scripts/fetch-fonts.mjs`.
 
 Turning a remote endpoint on is a deliberate configuration act and is a consent issue, not just a
 technical one: it means a student's words leave the browser. Crisis text is never sent to any remote
@@ -49,7 +53,7 @@ If and when the client is wired to the server, the note below applies to that fl
 | Cross-origin requests | Configured CORS allow-list | Verify deployed origins and proxy configuration |
 | Invalid input | Zod validation; JSON body-size limit | Broader endpoint schemas as modules are implemented |
 | Unwanted disclosure to a remote model | Remote adapters are off by default; crisis text is never sent | Written consent copy and a UI toggle before enabling remote models |
-| Third-party font request leaking visitor IP | Documented here | Self-host the fonts |
+| Third-party font request leaking visitor IP | Fonts are self-hosted in `client/public/fonts`; no external font request is made | Keep the self-hosted fonts in sync via `scripts/fetch-fonts.mjs` |
 | Misuse of screening outputs | Non-diagnostic copy; validated instrument wording; deterministic crisis override | Independent clinical, safety and accessibility review |
 | Data loss or excess retention | Everything is local and deletable; the demo warns that storage is volatile | Retention schedule, encryption at rest, audited export/deletion |
 
@@ -63,7 +67,7 @@ audit-logged. Those production safety and audit workflows are **not** implemente
 
 Do not use real student data until: field-level encryption for journal and chat text; audited,
 role-based professional access; k-anonymity suppression for any analytics; account export and
-deletion; retention controls; security testing; HTTPS; self-hosted fonts; and institution-approved
-crisis escalation are implemented and independently reviewed. Every helpline number, the campus
-counselling contact and the Department of Psychiatry details displayed in the app are placeholders
-and must be verified.
+deletion; retention controls; security testing; HTTPS; institution-approved
+crisis escalation are implemented and independently reviewed. Every helpline
+number, the campus counselling contact and the Department of Psychiatry details
+displayed in the app are placeholders and must be verified.

@@ -22,6 +22,7 @@ Both are read from Vite's `import.meta.env` and are **empty/off by default**.
 | ------------------------ | ------------------------------- | ---------- | -------------------------------- |
 | `VITE_CHAT_ENDPOINT`     | Remote chat completion endpoint | disabled   | `https://example.com/api/chat`   |
 | `VITE_SENTIMENT_ENDPOINT`| Remote sentiment endpoint       | disabled   | `https://example.com/api/sentiment` |
+| `VITE_API_TOKEN`         | Bearer token sent with chat requests (for an authenticated endpoint such as the bundled API) | disabled | `eyJhbGciOi...` |
 
 Put them in `.env` / `.env.local` at `client/` and restart the dev server (Vite
 inlines `VITE_`-prefixed values at build time). Only `VITE_`-prefixed variables
@@ -40,17 +41,21 @@ If neither variable is set:
 
 ## What the client sends and accepts
 
-### Chat — `requestChat({ text, history, lang })`
+### Chat — `requestChat({ text, lang, sessionId })`
 
-**Request** — `POST` with `Content-Type: application/json`:
+**Request** — `POST` with `Content-Type: application/json`, and
+`Authorization: Bearer <token>` when `VITE_API_TOKEN` is set:
 
 ```json
 {
   "message": "the student's latest message",
-  "history": [{ "role": "user", "text": "..." }, { "role": "ai", "text": "..." }],
-  "lang": "en"
+  "language": "en"
 }
 ```
+
+`language` is one of `en`, `hi`, `kn` (anything else is coerced to `en`).
+`sessionId` is included only when you pass one. Conversation history is **not**
+sent: the reference API replays its own persisted history per session.
 
 **Response** — any of these shapes is accepted and normalised to a plain string:
 
@@ -58,6 +63,7 @@ If neither variable is set:
 { "reply": "..." }
 { "text": "..." }
 { "message": "..." }
+{ "message": { "text": "..." } }
 { "content": "..." }
 { "choices": [{ "message": { "content": "..." } }] }
 ```
@@ -100,9 +106,10 @@ never throws.
 
 - `chatEndpoint(): string`
 - `sentimentEndpoint(): string`
+- `apiToken(): string`
 - `hasRemoteChat(): boolean`
 - `hasRemoteSentiment(): boolean`
-- `requestChat({ text, history, lang, signal, timeoutMs = 15000 }): Promise<string>`
+- `requestChat({ text, lang, sessionId, signal, timeoutMs = 15000 }): Promise<string>`
 - `requestSentiment({ text, signal, timeoutMs = 8000 }): Promise<{ score, label, confidence, emotion, topics, crisis }>`
 - `analyzeRemote(text): Promise<{ sentiment, emotion, topics, crisis }>`
 
@@ -127,18 +134,19 @@ things if you try to reuse it without changes.
   numbers (PHQ-9, GAD-7, stress, …), **not free text**.
 - `POST /api/safety/help-now`, `GET /api/safety/resources` — the crisis pathway.
 
-**Where the shapes differ (so an adapter or server change is required)**
+**Where the shapes differ (and what the client now handles)**
 
 1. **Auth.** `/api/chat` is behind `requireAuth` and expects an
-   `Authorization: Bearer <token>` header. `remote.js` sends no credentials, so a
-   direct call returns `401`. You need an auth-aware adapter/proxy in front of it,
-   or a small server change that allows an appropriately scoped anonymous route.
-2. **Field names.** The client sends `{ message, history, lang }`; the server
-   schema reads `{ message, language, sessionId }`. `language` defaults to `'en'`
-   and `history` is ignored (the server replays its own persisted history). So a
-   direct call works for the text field, but `lang` is not honoured and the
-   client-supplied `history` is unused. Either add a thin adapter that maps
-   `lang → language`, or extend the server schema to accept `lang`.
+   `Authorization: Bearer <token>` header. `remote.js` now sends that header
+   **when `VITE_API_TOKEN` is set**, so you can point `VITE_CHAT_ENDPOINT` at
+   `/api/chat` by supplying a valid access token. Without a token the call
+   returns `401`. For a public deployment you still need an auth-aware proxy (or
+   an appropriately scoped server route) rather than a long-lived token in a
+   `VITE_` variable — a build-time token is visible to anyone who inspects the
+   bundle, so treat `VITE_API_TOKEN` as a demo/dev convenience only.
+2. **Field names.** The client now sends `{ message, language, sessionId? }`,
+   matching the server schema (`language` instead of `lang`; `history` is not
+   sent because the server replays its own persisted history).
 3. **Reply shape.** This one already matches: the server returns `{ reply: "..." }`,
    which the client's normaliser accepts. No change needed for the text.
 4. **Sentiment.** There is **no standalone sentiment endpoint** on the server.
@@ -152,10 +160,11 @@ things if you try to reuse it without changes.
    by default (plus the deployment's own origin). The Vite dev client at `:5173`
    is already allowed; any other origin must be added via `CORS_ORIGIN`.
 
-**Net:** to use the existing server as-is, put a thin adapter (a serverless
-function, a dev proxy, or a small Express route) between the client and
-`/api/chat` that injects auth, maps `lang → language`, and returns
-`{ reply }`. Do not assume the client can call `/api/chat` directly today.
+**Net:** the client can now talk to `/api/chat` directly **in development** by
+setting `VITE_CHAT_ENDPOINT=/api/chat` (the Vite dev proxy forwards `/api` to the
+server on port 4000) plus a valid `VITE_API_TOKEN`. For production, put a thin
+adapter (a serverless function or a small Express route) between the client and
+`/api/chat` that injects auth server-side, so no token ever ships in the bundle.
 
 ---
 
@@ -196,6 +205,9 @@ default.
 - Set `VITE_CHAT_ENDPOINT` to a test endpoint and confirm: a normal message
   produces a "Live AI" badge and plain-text reply; stopping the endpoint produces
   the `companion.remoteFailed` toast and a local fallback reply.
+- If you point at the bundled `/api/chat`, also set `VITE_API_TOKEN` and confirm a
+  `401` becomes a successful reply; then remove the token for production and move
+  auth behind a server-side proxy.
 - Type a crisis phrase (e.g. "I want to die") and confirm in the browser Network
   tab that **no** request is made and the safety pathway opens.
 - Confirm your endpoint is reachable under the deployed CORS policy and that any

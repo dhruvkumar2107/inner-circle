@@ -1,4 +1,4 @@
-import { load, save } from './storage'
+import { load, save } from './storage.js'
 
 /**
  * Tiny, dependency-free helpers for the optional daily mood check-in reminder.

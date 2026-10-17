@@ -19,7 +19,7 @@
  * crisis check first and never calls this module for a crisis message.
  */
 
-import { analyze } from './sentiment'
+import { analyze } from './sentiment.js'
 
 const env = () => import.meta.env || {}
 
@@ -28,6 +28,13 @@ export const chatEndpoint = () => env().VITE_CHAT_ENDPOINT || ''
 
 /** Configured sentiment endpoint, or '' when remote sentiment is disabled. */
 export const sentimentEndpoint = () => env().VITE_SENTIMENT_ENDPOINT || ''
+
+/**
+ * Optional bearer token sent as `Authorization: Bearer <token>` on chat requests.
+ * Needed when the endpoint is the reference API (`POST /api/chat`), which is
+ * behind `requireAuth`. Off unless configured.
+ */
+export const apiToken = () => env().VITE_API_TOKEN || ''
 
 /** True only when a chat endpoint has been configured. Off by default. */
 export const hasRemoteChat = () => Boolean(chatEndpoint())
@@ -68,17 +75,28 @@ const createAbort = (timeoutMs, signal) => {
 
 const asString = (value) => (typeof value === 'string' ? value.trim() : '')
 
+const SUPPORTED_LANGUAGES = ['en', 'hi', 'kn']
+
 /**
  * Accepts any of the documented reply shapes and returns a plain string:
- * `{ reply }`, `{ text }`, `{ message }`, `{ content }` or
- * `{ choices: [{ message: { content } }] }`.
+ * `{ reply }`, `{ text }`, `{ message }` (string), `{ message: { text } }`,
+ * `{ content }` or `{ choices: [{ message: { content } }] }`.
  */
 const normalizeReply = (body) => {
   if (typeof body === 'string') return asString(body)
   if (!body || typeof body !== 'object') return ''
 
-  for (const value of [body.reply, body.text, body.message, body.content]) {
+  for (const value of [body.reply, body.text, body.content]) {
     const candidate = asString(value)
+    if (candidate) return candidate
+  }
+
+  const message = body.message
+  if (typeof message === 'string') {
+    const candidate = asString(message)
+    if (candidate) return candidate
+  } else if (message && typeof message === 'object') {
+    const candidate = asString(message.text) || asString(message.content)
     if (candidate) return candidate
   }
 
@@ -91,23 +109,31 @@ const normalizeReply = (body) => {
 /**
  * POST a message to the configured chat endpoint.
  *
- * Sends JSON `{ message, history, lang }` and resolves with the assistant's
- * plain-text reply. Throws a descriptive Error on a non-OK status, on abort or
- * timeout, or when the body cannot be parsed into text.
+ * Sends JSON `{ message, language, sessionId }` — the shape the reference API
+ * expects — and resolves with the assistant's plain-text reply. When
+ * `VITE_API_TOKEN` is set it is sent as a Bearer token (the reference API's
+ * `POST /api/chat` is behind `requireAuth`). Throws a descriptive Error on a
+ * non-OK status, on abort or timeout, or when the body has no usable text.
  *
- * @param {{ text: string, history?: Array<{role: string, text: string}>, lang?: string, signal?: AbortSignal, timeoutMs?: number }} params
+ * @param {{ text: string, history?: Array<{role: string, text: string}>, lang?: string, sessionId?: string, signal?: AbortSignal, timeoutMs?: number }} params
  * @returns {Promise<string>}
  */
-export async function requestChat({ text, history = [], lang, signal, timeoutMs = 15000 } = {}) {
+export async function requestChat({ text, lang, sessionId, signal, timeoutMs = 15000 } = {}) {
   const endpoint = chatEndpoint()
   if (!endpoint) throw new Error('No chat endpoint is configured (VITE_CHAT_ENDPOINT).')
+
+  const language = SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en'
+  const token = apiToken()
 
   const abort = createAbort(timeoutMs, signal)
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, history: Array.isArray(history) ? history : [], lang }),
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ message: text, language, ...(sessionId ? { sessionId } : {}) }),
       signal: abort.signal,
     })
 

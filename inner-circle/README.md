@@ -95,8 +95,9 @@ Everything lives in this browser's `localStorage` (keys prefixed `ic.`):
 `ic.assessments` · `ic.messages` · `ic.appts` · `ic.lang` · `ic.reminder.lastFired`
 
 No data is uploaded anywhere. Settings & Privacy can export a JSON copy (the demo password hash is
-excluded) and delete everything. The only outbound requests are the Google Fonts stylesheet (self-host
-to remove it) and, if you explicitly configure them, the optional remote endpoints below.
+excluded) and delete everything. The app makes **no network requests** after load: its fonts are
+self-hosted in `client/public/fonts` (regenerate with `node scripts/fetch-fonts.mjs`), and the only
+outbound requests would be the optional remote endpoints below, which are off unless you configure them.
 
 ---
 
@@ -141,7 +142,18 @@ client/src/
 | `npm run dev --workspace client` | Start only the web app |
 | `npm run build` | Production build of the client **and** the server |
 | `npm run build --workspace client` | Production build of the app only |
-| `npm test` | Server unit tests (includes the fuzzy engine tests) |
+| `npm test` | Unit tests for the server (Jest) **and** the client (Node's built-in runner) |
+| `npm run typecheck` | Type-check the server |
+| `node scripts/fetch-fonts.mjs` | Re-download the self-hosted fonts |
+
+### Tests
+
+The client suite (62 checks across 10 files) runs on Node's built-in test runner with **no extra
+dependencies** and covers the pure logic: the fuzzy engine (bands, safety override, membership
+bounds, 14 rules), the PHQ-9/GAD-7 bands and item-9 index, multilingual crisis detection (English,
+romanised, Devanagari, Kannada) and sentiment, the chess rules (castling, en passant, promotion,
+checkmate/stalemate/insufficient material, legal-move invariants), the companion engine (crisis
+short-circuit, translation-key coverage), and i18n key parity across all three languages.
 
 ---
 
