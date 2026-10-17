@@ -1,72 +1,54 @@
-import { Link, Navigate, Outlet, Route, Routes } from 'react-router-dom'
-import { tokenKey } from './lib/api'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useApp } from './context/AppContext'
 import { AppShell } from './components/Shell'
-import { Brand, LanguagePicker } from './components/common'
-import Landing from './pages/Landing'
-import Auth from './pages/Auth'
-import Onboarding from './pages/Onboarding'
-import Dashboard from './pages/Dashboard'
-import Chat from './pages/Chat'
-import CheckIn from './pages/CheckIn'
-import Appointments from './pages/Appointments'
-import Resources from './pages/Resources'
-import Forum from './pages/Forum'
-import HowItWorks from './pages/HowItWorks'
-import Privacy from './pages/Privacy'
-import Settings from './pages/Settings'
-import Playground from './pages/Playground'
+import Register from './pages/Register'
+import Home from './pages/Home'
+import Companion from './pages/Companion'
+import MoodJourney from './pages/MoodJourney'
+import Assessments from './pages/Assessments'
+import AssessmentRunner from './pages/AssessmentRunner'
+import AssessmentResult from './pages/AssessmentResult'
+import PlayRelax from './pages/PlayRelax'
+import Breathe from './pages/Breathe'
+import Puzzles from './pages/Puzzles'
 import Professional from './pages/Professional'
-import Admin from './pages/Admin'
+import SupportInsights from './pages/SupportInsights'
+import Settings from './pages/Settings'
 
-const RequireAuth = ({ children }) => {
-  if (!localStorage.getItem(tokenKey)) return <Navigate to="/login" replace />
+function RequireProfile({ children }) {
+  const { profile } = useApp()
+  if (!profile) return <Navigate to="/register" replace />
   return children
 }
 
-const InfoShell = () => {
-  if (localStorage.getItem(tokenKey)) return <AppShell />
-  return (
-    <div className="info-shell">
-      <header className="info-shell-nav">
-        <Link to="/" className="info-shell-brand"><Brand /></Link>
-        <div className="info-shell-actions">
-          <LanguagePicker />
-          <Link className="btn btn-ghost" to="/login">Sign in</Link>
-          <Link className="btn btn-primary" to="/register">Create account</Link>
-        </div>
-      </header>
-      <main className="info-shell-content"><Outlet /></main>
-    </div>
-  )
+function EntryRedirect() {
+  const { profile } = useApp()
+  return <Navigate to={profile ? '/home' : '/register'} replace />
 }
 
 export default function App() {
+  const location = useLocation()
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Auth mode="login" />} />
-      <Route path="/register" element={<Auth mode="register" />} />
-      <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
+    <Routes location={location}>
+      <Route path="/register" element={<Register />} />
+      <Route path="/" element={<EntryRedirect />} />
 
-      <Route element={<InfoShell />}>
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/privacy" element={<Privacy />} />
-      </Route>
-
-      <Route element={<RequireAuth><AppShell /></RequireAuth>}>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/check-in" element={<CheckIn />} />
-        <Route path="/appointments" element={<Appointments />} />
-        <Route path="/resources" element={<Resources />} />
-        <Route path="/forum" element={<Forum />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/playground" element={<Playground />} />
+      <Route element={<RequireProfile><AppShell /></RequireProfile>}>
+        <Route path="/home" element={<Home />} />
+        <Route path="/companion" element={<Companion />} />
+        <Route path="/mood" element={<MoodJourney />} />
+        <Route path="/assessments" element={<Assessments />} />
+        <Route path="/assessments/:type" element={<AssessmentRunner />} />
+        <Route path="/assessments/:type/result" element={<AssessmentResult />} />
+        <Route path="/play" element={<PlayRelax />} />
+        <Route path="/breathe" element={<Breathe />} />
+        <Route path="/puzzles" element={<Puzzles />} />
         <Route path="/professional" element={<Professional />} />
-        <Route path="/admin" element={<Admin />} />
+        <Route path="/how" element={<SupportInsights />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<EntryRedirect />} />
     </Routes>
   )
 }

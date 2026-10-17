@@ -1,0 +1,97 @@
+.mj-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.mj-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.mj-legend span {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.mj-hint {
+  margin: 0.7rem 0 0;
+}
+
+.mj-sep {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 1.1rem 0 0;
+}
+
+.mj-trend-caption {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.55rem 0 0;
+}
+
+.mj-form {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+.mj-form .field {
+  flex: 1;
+  margin-bottom: 0;
+}
+.chip-row + .mj-form {
+  margin-top: 1rem;
+}
+
+.mj-row-date {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.15rem;
+}
+.mj-row-text {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mj-row-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--mint);
+  color: var(--sage-700);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.mj-confirm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex: none;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .mj-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mj-form .btn {
+    width: 100%;
+  }
+}

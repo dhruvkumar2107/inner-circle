@@ -1,111 +1,265 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Check, LogOut, Save, ShieldCheck, Sparkles, UserRound } from 'lucide-react'
-import { api, clearSession, getAlias } from '../lib/api'
-import { ErrorBanner, LanguagePicker, SectionHeader } from '../components/common'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Download, LogOut, ShieldCheck, Trash2, Volume2 } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { Modal, Note, PageHeader } from '../components/ui'
+import { longDate, remove } from '../lib/storage'
 
-const concerns = [
-  { id: 'anxiety', label: 'Exam & academic anxiety' },
-  { id: 'stress', label: 'Stress & overwhelm' },
-  { id: 'sleep', label: 'Sleep' },
-  { id: 'loneliness', label: 'Loneliness' },
-  { id: 'mood', label: 'Low mood' },
-  { id: 'focus', label: 'Focus & motivation' },
-  { id: 'relationships', label: 'Relationships' },
-  { id: 'self-esteem', label: 'Self-esteem' },
-]
+function InfoRow({ label, value, hint }) {
+  return (
+    <div className="setting-row">
+      <div>
+        <b>{label}</b>
+        {hint && <small>{hint}</small>}
+      </div>
+      <span className="small" style={{ color: 'var(--muted)', textAlign: 'right' }}>{value}</span>
+    </div>
+  )
+}
+
+function SectionHead({ title, sub }) {
+  return (
+    <div className="section-title" style={{ margin: '0 0 0.6rem' }}>
+      <h2>{title}</h2>
+      {sub && <p>{sub}</p>}
+    </div>
+  )
+}
 
 export default function Settings() {
   const navigate = useNavigate()
-  const { t } = useTranslation()
-  const [me, setMe] = useState(null)
-  const [picked, setPicked] = useState([])
-  const [notice, setNotice] = useState('')
-  const [error, setError] = useState('')
+  const {
+    profile, consents, settings, moods, entries, wins, assessments, messages,
+    updateConsents, updateSettings, resetAll, signOut, toast,
+  } = useApp()
+  const [confirming, setConfirming] = useState(false)
 
-  useEffect(() => {
-    api('/auth/me').then(data => setMe(data.user)).catch(err => setError(err.message))
-    try { setPicked(JSON.parse(localStorage.getItem('inner-circle-concerns') || '[]')) } catch { setPicked([]) }
-  }, [])
-
-  const toggle = id => setPicked(value => value.includes(id) ? value.filter(x => x !== id) : [...value, id])
-
-  const save = () => {
-    localStorage.setItem('inner-circle-concerns', JSON.stringify(picked))
-    setNotice('Preferences saved.')
+  const flipResearch = () => {
+    const next = !consents.research
+    updateConsents({ research: next })
+    toast(next ? 'Research feedback turned on (demo).' : 'Research feedback turned off.')
   }
 
-  const signOut = async () => {
-    try { await api('/auth/logout', { method: 'POST' }) } catch { /* ignore */ }
-    clearSession()
+  const flipTts = () => {
+    const next = !settings.tts
+    updateSettings({ tts: next })
+    toast(next ? 'Companion replies will be read aloud.' : 'Companion replies will stay quiet.')
+  }
+
+  const flipVoice = () => {
+    const next = !settings.voiceGuidance
+    updateSettings({ voiceGuidance: next })
+    toast(next ? 'Spoken guidance in breathing exercises is on.' : 'Spoken guidance in breathing exercises is off.')
+  }
+
+  const exportData = () => {
+    const safeProfile = { ...profile }
+    delete safeProfile.passwordHash
+    const data = {
+      profile: safeProfile,
+      consents,
+      settings,
+      moods,
+      entries,
+      wins,
+      assessments,
+      messagesCount: messages.length,
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'inner-circle-data.json'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+    toast('Your data was exported as a JSON file.')
+  }
+
+  const confirmDelete = () => {
+    resetAll()
+    remove('ic.appts')
+    setConfirming(false)
+    toast('All local data deleted.')
+    navigate('/')
+  }
+
+  const handleSignOut = () => {
+    signOut()
     navigate('/')
   }
 
   return (
     <div className="page">
-      <div className="page-head">
-        <div>
-          <span className="kicker">SETTINGS</span>
-          <h1>Your space, your rules</h1>
-          <p>Adjust how Inner Circle supports you. None of these choices are permanent.</p>
-        </div>
-      </div>
+      <PageHeader
+        kicker="SETTINGS"
+        title="Your space, your rules"
+        sub="Adjust how Inner Circle supports you. None of these choices are permanent."
+      />
 
-      {notice && <div className="toast-inline" onClick={() => setNotice('')}>{notice}</div>}
-      <ErrorBanner message={error} />
+      <div className="grid">
+        <section className="card card-pad">
+          <SectionHead title="Your profile" sub="Read-only details from the demo profile stored on this device." />
+          <div>
+            <InfoRow label="Name" value={profile?.name || '—'} />
+            <InfoRow label="Email" value={profile?.email || '—'} />
+            <InfoRow label="Age" value={profile?.age ?? '—'} />
+            <InfoRow label="University" value={profile?.university || '—'} />
+            <InfoRow label="Member since" value={profile?.createdAt ? longDate(profile.createdAt) : '—'} />
+          </div>
+          {consents.research && (
+            <p className="small muted" style={{ margin: '0.8rem 0 0' }}>
+              You have chosen to contribute anonymised research feedback — turn it off under Consent below.
+            </p>
+          )}
+          <div style={{ marginTop: '1rem' }}>
+            <Note tone="grey" icon={ShieldCheck}>
+              Your password is kept only as a demo hash in this browser. It is never shown here and
+              never sent anywhere.
+            </Note>
+          </div>
+        </section>
 
-      <div className="settings-grid">
-        <section className="panel">
-          <SectionHeader kicker="YOUR PROFILE" title="How you appear" tight />
-          <div className="profile-card">
-            <span className="profile-avatar">{getAlias().slice(0, 1)}</span>
-            <div>
-              <b>{me?.alias || getAlias()}</b>
-              <small>{t('sidebar.tagline')}</small>
+        <section className="card card-pad">
+          <SectionHead title="Consent" sub="What you agreed to, and what you can change." />
+          <div>
+            <div className="setting-row">
+              <div>
+                <b>Terms &amp; privacy accepted</b>
+                <small>Required once when the demo profile was created.</small>
+              </div>
+              <span className="small" style={{ color: 'var(--muted)' }}>
+                {consents.termsAt ? longDate(consents.termsAt) : 'Not recorded on this device'}
+              </span>
+            </div>
+            <div className="setting-row">
+              <div>
+                <b>Contribute anonymised research feedback</b>
+                <small>
+                  In a real deployment this would let the university study de-identified, anonymised
+                  well-being patterns. In this prototype it only stores your choice in this browser.
+                </small>
+              </div>
+              <button
+                type="button"
+                className={`switch ${consents.research ? 'on' : ''}`}
+                aria-pressed={consents.research}
+                aria-label="Contribute anonymised research feedback"
+                onClick={flipResearch}
+              />
             </div>
           </div>
-          <ul className="profile-list">
-            <li><span><UserRound size={15} /> Name</span><b>{me ? `${me.firstName}` : '—'}</b></li>
-            <li><span><Sparkles size={15} /> Role</span><b>{me?.role || 'student'}</b></li>
-            <li><span><ShieldCheck size={15} /> College</span><b>{me?.college || 'Not provided'}</b></li>
-          </ul>
-          <p className="verify-note">Your alias is how you appear in community rooms — your real name is never shown to other students.</p>
         </section>
 
-        <section className="panel">
-          <SectionHeader kicker="PREFERENCES" title="Language & focus areas" tight />
-          <div className="settings-row">
-            <span>App language</span>
-            <LanguagePicker />
+        <section className="card card-pad">
+          <SectionHead title="Preferences" sub="Small switches for how the app behaves." />
+          <div>
+            <div className="setting-row">
+              <div>
+                <b style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Volume2 size={15} /> Read companion replies aloud
+                </b>
+                <small>Your browser speaks each reply as it arrives. Everything is still written out in full.</small>
+              </div>
+              <button
+                type="button"
+                className={`switch ${settings.tts ? 'on' : ''}`}
+                aria-pressed={settings.tts}
+                aria-label="Read companion replies aloud"
+                onClick={flipTts}
+              />
+            </div>
+            <div className="setting-row">
+              <div>
+                <b style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Volume2 size={15} /> Spoken guidance in breathing exercises
+                </b>
+                <small>Steps such as inhale, hold and exhale are spoken while you follow along.</small>
+              </div>
+              <button
+                type="button"
+                className={`switch ${settings.voiceGuidance ? 'on' : ''}`}
+                aria-pressed={settings.voiceGuidance}
+                aria-label="Spoken guidance in breathing exercises"
+                onClick={flipVoice}
+              />
+            </div>
           </div>
-          <p className="muted small">What would you like more support with?</p>
-          <div className="chip-grid">
-            {concerns.map(item => (
-              <button type="button" key={item.id} className={`select-chip ${picked.includes(item.id) ? 'select-chip-on' : ''}`} onClick={() => toggle(item.id)}>
-                {picked.includes(item.id) && <Check size={14} />}{item.label}
-              </button>
-            ))}
-          </div>
-          <button className="btn btn-primary" onClick={save}><Save size={16} /> Save preferences</button>
         </section>
 
-        <section className="panel">
-          <SectionHeader kicker="PRIVACY & SAFETY" title="What stays private" tight />
-          <ul className="privacy-points">
-            <li>Chats, check-ins and notes are yours.</li>
-            <li>Staff see anonymized risk signals only when a safety review is needed.</li>
-            <li>You can use “I need help now” any time for real crisis contacts.</li>
+        <section className="card card-pad">
+          <SectionHead title="Your data & privacy" sub="Everything stays in this browser." />
+          <ul style={{ margin: '0 0 1rem', paddingLeft: '1.15rem' }}>
+            <li className="small" style={{ color: 'var(--muted)', marginBottom: '0.3rem' }}>
+              Everything lives in this browser's local storage, under Inner Circle keys such as ic.profile and ic.moods.
+            </li>
+            <li className="small" style={{ color: 'var(--muted)', marginBottom: '0.3rem' }}>
+              Nothing is uploaded — this prototype has no server.
+            </li>
+            <li className="small" style={{ color: 'var(--muted)', marginBottom: 0 }}>
+              Export a copy or delete it all, whenever you like.
+            </li>
           </ul>
-          <Link className="btn btn-soft" to="/privacy"><ShieldCheck size={16} /> Read the full policy</Link>
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn btn-outline" onClick={exportData}>
+              <Download size={16} /> Export my data
+            </button>
+            <button type="button" className="btn btn-danger" onClick={() => setConfirming(true)}>
+              <Trash2 size={16} /> Delete all my data
+            </button>
+          </div>
         </section>
 
-        <section className="panel panel-danger">
-          <SectionHeader kicker="ACCOUNT" title="Sign out" tight />
-          <p className="muted">Signing out clears this device. Your data stays safe on the server.</p>
-          <button className="btn btn-outline" onClick={signOut}><LogOut size={16} /> Sign out</button>
+        <section className="card card-pad">
+          <SectionHead title="Account" />
+          <div className="setting-row">
+            <div>
+              <b>Sign out</b>
+              <small>Signing out removes the demo profile from this device. The rest of your data stays until you delete it.</small>
+            </div>
+            <button type="button" className="btn btn-outline" onClick={handleSignOut}>
+              <LogOut size={16} /> Sign out
+            </button>
+          </div>
         </section>
       </div>
+
+      <div style={{ marginTop: '1.2rem' }}>
+        <Note tone="grey">
+          Inner Circle is a well-being and screening prototype, not medical care. It never diagnoses,
+          never prescribes, and it is not an emergency service.
+        </Note>
+      </div>
+
+      {confirming && (
+        <Modal
+          kicker="THIS CANNOT BE UNDONE"
+          title="Delete all your local data?"
+          onClose={() => setConfirming(false)}
+          footer={(
+            <>
+              <button type="button" className="btn btn-danger" onClick={confirmDelete}>Yes, delete everything</button>
+              <button type="button" className="btn btn-ghost" onClick={() => setConfirming(false)}>Keep my data</button>
+            </>
+          )}
+        >
+          <p className="small" style={{ marginTop: 0 }}>
+            This removes everything below from this device only:
+          </p>
+          <ul>
+            <li>Your demo profile — name, email, age and university</li>
+            <li>Your terms and research consents</li>
+            <li>Your preferences</li>
+            <li>Mood check-ins, journal entries and tiny wins</li>
+            <li>Screening records and the companion conversation</li>
+            <li>Saved appointment requests</li>
+          </ul>
+          <p className="small muted" style={{ marginBottom: 0 }}>
+            Nothing is kept on a server, so there is nothing else to clear. This cannot be undone.
+          </p>
+        </Modal>
+      )}
     </div>
   )
 }

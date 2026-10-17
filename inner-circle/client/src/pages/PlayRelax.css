@@ -1,0 +1,283 @@
+/* Play & Relax — page-specific styles. Design tokens come from theme.css. */
+
+.field > label {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+
+.play-note { margin-bottom: 1.1rem; }
+
+.play-card { min-height: 172px; }
+.play-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+}
+.play-best { margin-left: auto; }
+.play-card .btn { align-self: flex-start; }
+
+/* --------------------------- endless runner ---------------------------- */
+.runner-wrap {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+  touch-action: manipulation;
+  user-select: none;
+}
+.runner-canvas { display: block; width: 100%; }
+.runner-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.78);
+}
+.runner-overlay .game-over { max-width: 340px; width: 100%; }
+
+/* ------------------------------ match-three ---------------------------- */
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  max-width: 360px;
+  margin: 0 auto;
+}
+.match-tile {
+  aspect-ratio: 1;
+  border: 2px solid rgba(34, 48, 42, 0.07);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.match-tile:hover:not(:disabled) { transform: translateY(-2px); }
+.match-tile-on {
+  border-color: var(--sage);
+  box-shadow: var(--ring);
+  transform: translateY(-2px);
+}
+.match-tile:disabled { cursor: default; opacity: 0.9; }
+
+/* ----------------------------- memory match ---------------------------- */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.memory-card {
+  aspect-ratio: 1;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  perspective: 640px;
+}
+.memory-card:disabled { cursor: default; }
+.memory-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.35s ease;
+}
+.memory-card-on .memory-inner { transform: rotateY(180deg); }
+.memory-front,
+.memory-back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+.memory-front {
+  background: var(--mint);
+  border: 1.5px solid var(--mint-2);
+  color: var(--sage-600);
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+.memory-back {
+  background: #fff;
+  border: 1.5px solid var(--mint-3);
+  transform: rotateY(180deg);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.memory-card-matched .memory-back {
+  background: var(--sage-50);
+  border-color: var(--sage);
+}
+
+/* ---------------------------- focus reaction --------------------------- */
+.reaction-stage {
+  position: relative;
+  height: 250px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
+  overflow: hidden;
+  touch-action: manipulation;
+}
+.reaction-target {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  animation: target-breathe 1.6s ease-in-out infinite;
+}
+.reaction-target:hover { transform: translate(-50%, -50%) scale(1.08); }
+.reaction-target:active { transform: translate(-50%, -50%) scale(0.96); }
+.tone-sage { background: #dcecdf; box-shadow: inset 0 0 0 2px #c2dcc2; }
+.tone-mint { background: #eaf4eb; box-shadow: inset 0 0 0 2px #d3e8d6; }
+.tone-amber { background: #f6e8cd; box-shadow: inset 0 0 0 2px #ecd7a8; }
+.tone-rose { background: #f4e3e1; box-shadow: inset 0 0 0 2px #e8c9c6; }
+.tone-sky { background: #dceaf3; box-shadow: inset 0 0 0 2px #c6dcea; }
+@keyframes target-breathe {
+  0%, 100% { opacity: 0.92; }
+  50% { opacity: 1; }
+}
+.reaction-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+}
+.reaction-overlay .game-over { max-width: 320px; width: 100%; }
+
+/* --------------------------- colouring canvas -------------------------- */
+.play-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+.palette-row { display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center; }
+.palette-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(34, 48, 42, 0.12);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.palette-swatch:hover { transform: scale(1.08); }
+.palette-swatch-on { box-shadow: var(--ring); transform: scale(1.06); }
+.colour-wrap {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fff;
+}
+.colour-canvas {
+  display: block;
+  width: 100%;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* -------------------------------- calm jar ----------------------------- */
+.jar-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.4rem 0;
+}
+.calm-jar {
+  width: 158px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.calm-jar-shaking { animation: jar-sway 0.9s ease-in-out 2; }
+@keyframes jar-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+.jar-lid {
+  width: 96px;
+  height: 16px;
+  border-radius: 6px 6px 3px 3px;
+  background: var(--cream-2);
+  border: 1px solid #e6dcc4;
+  z-index: 1;
+}
+.jar-glass {
+  position: relative;
+  width: 100%;
+  height: 210px;
+  margin-top: -3px;
+  border: 2px solid var(--mint-3);
+  border-radius: 10px 10px 34px 34px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, var(--mint) 100%);
+  overflow: hidden;
+}
+.jar-dot {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+  transition: left 2.5s ease-in-out, top 2.5s ease-in-out;
+}
+.jar-dot-fast { transition-duration: 1.35s; }
+
+/* ----------------------------- mindfulness ----------------------------- */
+.mind-dots { display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 0.6rem; }
+.mind-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line-2);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.mind-dot-on { background: var(--sage); transform: scale(1.25); }
+.mind-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 1.2rem 1.3rem;
+}
+.mind-panel h3 { margin-bottom: 0.4rem; }
+.mind-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+}
+.mind-done-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--mint);
+  color: var(--sage-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reaction-target { animation: none; }
+  .calm-jar-shaking { animation: none; }
+  .jar-dot { transition-duration: 0.01s; }
+  .memory-inner { transition-duration: 0.01s; }
+}
