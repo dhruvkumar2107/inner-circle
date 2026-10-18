@@ -44,6 +44,23 @@ function canPlace(grid, piece, dr, dc) {
   return true
 }
 
+function PiecePreview({ cells }) {
+  const rows = Math.max(...cells.map(([r]) => r)) + 1
+  const cols = Math.max(...cells.map(([, c]) => c)) + 1
+  const filled = new Set(cells.map(([r, c]) => r * cols + c))
+  return (
+    <span
+      className="piece-preview"
+      style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+      aria-hidden="true"
+    >
+      {Array(rows * cols).fill().map((_, i) => (
+        <i key={i} className={filled.has(i) ? 'on' : ''} />
+      ))}
+    </span>
+  )
+}
+
 export default function BlockPuzzle({ onComplete }) {
   const { t } = useI18n()
   const [grid, setGrid] = useState(() => Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(EMPTY)))
@@ -162,16 +179,19 @@ export default function BlockPuzzle({ onComplete }) {
         })}
       </div>
 
-      <div className="puzzle-controls">
+      <div className="puzzle-controls piece-tray">
         {pieces.map((piece, idx) => (
           <button
             key={piece.key}
             type="button"
-            className={`btn btn-outline btn-sm ${selected === idx ? 'btn-primary' : ''}`}
+            className={`block-piece-btn ${selected === idx ? 'active' : ''}`}
             onClick={() => setSelected(selected === idx ? null : idx)}
             disabled={gameOver}
+            aria-pressed={selected === idx}
+            aria-label={t('puzzles.block.piece', { n: idx + 1, cells: piece.cells.length })}
           >
-            {t('puzzles.block.piece', { n: idx + 1, cells: piece.cells.length })}
+            <PiecePreview cells={piece.cells} />
+            <span className="piece-btn-label">{t('puzzles.block.piece', { n: idx + 1, cells: piece.cells.length })}</span>
           </button>
         ))}
       </div>

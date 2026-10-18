@@ -59,6 +59,22 @@ test('sentiment polarity responds to clearly positive and negative text', () => 
   assert.ok(negative.sentiment.score < 0, `expected a negative score, got ${negative.sentiment.score}`)
 })
 
+test('negation flips positive words so distress phrasing reads Negative (IC-01)', () => {
+  for (const text of [
+    'i am not feeling good',
+    "i don't feel okay",
+    'i don’t feel ok',
+    'I am not well',
+  ]) {
+    const { sentiment } = analyze(text)
+    assert.equal(sentiment.label, 'Negative', `"${text}" must be labelled Negative, got ${sentiment.label}`)
+    assert.ok(sentiment.score < 0, `"${text}" must have a negative score, got ${sentiment.score}`)
+  }
+
+  const plain = analyze('I am feeling good today')
+  assert.equal(plain.sentiment.label, 'Positive', 'unnegated positive wording must stay Positive')
+})
+
 test('analysis handles emoji, punctuation and unknown scripts without throwing', () => {
   for (const text of ['😀💯', '— ; DROP TABLE students; --', 'ನಮಸ್ಕಾರ', '你好世界', '']) {
     const result = analyze(text)

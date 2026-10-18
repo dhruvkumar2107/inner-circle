@@ -72,7 +72,17 @@ const INTENTS = [
   },
   {
     key: 'low',
-    match: ['sad', 'depressed', 'down', 'low', 'hopeless', 'empty', 'numb', 'worthless', 'useless', 'failure', 'failed', 'crying', 'hurt', 'heartbroken', 'give up'],
+    match: [
+      'sad', 'depressed', 'down', 'low', 'hopeless', 'empty', 'numb', 'worthless', 'useless',
+      'failure', 'failed', 'crying', 'hurt', 'heartbroken', 'give up',
+      // distress phrases — checked before the positive intent so negated
+      // wording such as "not feeling good" can never select a cheerful reply
+      'not feeling good', 'not feeling well', 'not doing well',
+      "don't feel good", 'dont feel good', "don't feel okay", 'dont feel okay',
+      "don't feel ok", 'dont feel ok', "don't feel well", 'dont feel well',
+      'not feeling okay', 'not feeling ok', 'not okay', 'not ok', 'not well',
+      'feel bad', 'feeling bad', 'feeling down', 'feeling low', 'feeling sad',
+    ],
     replies: ['companion.replies.low.0', 'companion.replies.low.1', 'companion.replies.low.2'],
     follow: [
       { labelKey: 'companion.prompts.understand', seed: 'I want to understand my feelings' },
@@ -146,10 +156,31 @@ const CRISIS_REPLY = {
   suggestion: { labelKey: 'companion.suggestions.openUrgent', to: '/professional?urgent=1' },
 }
 
+const INTENT_NEGATORS = new Set([
+  'not', "don't", 'dont', 'never', 'no', "isn't", 'isnt', "wasn't", 'wasnt',
+  'cannot', "can't", 'cant', 'hardly', 'without',
+])
+
+/**
+ * Negation-aware intent matching. A single-word cue preceded by a negator
+ * (e.g. "good" in "not feeling good") must not select that intent — the
+ * word is describing the *absence* of the feeling, not its presence.
+ * Multi-word phrases already encode their own polarity and are matched as-is.
+ */
 const detectIntent = (message) => {
-  const lower = ` ${message.toLowerCase()} `
+  const tokens = message.toLowerCase().split(/[^a-z0-9'’\u0900-\u097F\u0C80-\u0CFF]+/).filter(Boolean)
+  const lower = ` ${tokens.join(' ')} `
+  const negated = (word) => {
+    const idx = tokens.indexOf(word)
+    if (idx < 0) return false
+    return tokens.slice(Math.max(0, idx - 3), idx).some((w) => INTENT_NEGATORS.has(w))
+  }
   for (const intent of INTENTS) {
-    if (intent.match.some((word) => lower.includes(word))) return intent
+    for (const word of intent.match) {
+      if (!lower.includes(word)) continue
+      if (!word.includes(' ') && negated(word)) continue
+      return intent
+    }
   }
   return null
 }
@@ -180,9 +211,16 @@ export const generateReply = ({ text, history = [] }) => {
   }
 
   const { sentiment } = analyze(text)
-  const intent = detectIntent(text)
+  let intent = detectIntent(text)
   const seed = history.filter((m) => m.role === 'user').length
   const earlierTopic = topicMentions(history)
+
+  // Consistency guard: a message that reads negative overall must never get a
+  // cheerful "positive" reply, even when a positive-looking word appears
+  // (e.g. "everything good in my life is gone").
+  if (intent?.key === 'positive' && sentiment.label === 'Negative') {
+    intent = INTENTS.find((i) => i.key === 'low')
+  }
 
   if (!intent) {
     if (sentiment.label === 'Negative' && earlierTopic) {

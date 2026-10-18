@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { generateReply, QUICK_PROMPTS } from '../src/lib/chatEngine.js'
+import { analyze } from '../src/lib/sentiment.js'
 
 const LANGS = ['en', 'hi', 'kn']
 const locales = Object.fromEntries(
@@ -126,4 +127,30 @@ test('QUICK_PROMPTS carry a label and a resolvable seed', () => {
     assert.ok(reply.key, `seed "${prompt.seed}" must produce a reply`)
     assert.equal(reply.crisis, false)
   }
+})
+
+test('negated or distressed wording never selects a cheerful positive reply (IC-01)', () => {
+  const distressed = [
+    'i am not feeling good',
+    "i don't feel okay",
+    'I feel sad',
+    'not feeling well today',
+    'I feel hopeless',
+  ]
+  for (const text of distressed) {
+    const reply = generateReply({ text })
+    assert.notEqual(reply.intent, 'positive', `"${text}" must not get the positive intent`)
+    assert.notEqual(reply.key, 'companion.replies.positive.1', `"${text}" must not get the cheerful reply`)
+    assert.equal(reply.crisis, false, `"${text}" is not crisis language`)
+  }
+
+  // The exact report case: label, score and reply must agree.
+  const report = generateReply({ text: 'i am not feeling good' })
+  assert.equal(report.intent, 'low', 'the report case must route to the empathetic low-mood intent')
+  const { sentiment } = analyze('i am not feeling good')
+  assert.equal(sentiment.label, 'Negative', 'the report case must read as Negative, not Neutral')
+
+  // Genuine positives still get the positive intent.
+  const positive = generateReply({ text: 'I am feeling good today, everything went well' })
+  assert.equal(positive.intent, 'positive', 'a genuinely positive message must keep the positive intent')
 })

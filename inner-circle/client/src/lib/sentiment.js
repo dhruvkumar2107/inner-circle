@@ -36,7 +36,11 @@ const NEGATIVE = [
   'ನಿರಾಶೆ', 'ಅಳು', 'ಭಯ', 'ಗಾಬರಿ', 'ಕೋಪ', 'ನೋವು', 'ಸೋಲು', 'ವಿಫಲ', 'ಭಾರ',
 ]
 
-const NEGATORS = ['not', "don't", 'dont', 'never', 'no', 'hardly', "isn't", 'isnt', "wasn't", 'wasnt', 'cannot', "can't", 'cant']
+const NEGATORS = [
+  'not', "don't", 'dont', 'never', 'no', 'hardly', "isn't", 'isnt', "wasn't", 'wasnt',
+  'cannot', "can't", 'cant', "won't", 'wont', "couldn't", 'couldnt', "shouldn't", 'shouldnt',
+  "wouldn't", 'wouldnt', "ain't", 'aint', 'without',
+]
 
 const INTENSIFIERS = ['very', 'so', 'really', 'extremely', 'super', 'incredibly', 'totally', 'completely', 'absolutely', 'too']
 
@@ -98,7 +102,10 @@ const TOPIC_LEXICON = {
 
 /** Sentiment: -1 (negative) .. +1 (positive), with a rough confidence. */
 export const analyzeSentiment = (text) => {
-  const normalized = String(text || '').toLowerCase().replace(/[^\p{L}\p{N}'\s-]/gu, ' ')
+  const normalized = String(text || '')
+    .replace(/[\u2018\u2019\u2032]/g, "'")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}'\s-]/gu, ' ')
   const words = normalized.split(/\s+/).filter(Boolean)
   if (!words.length) return { score: 0, label: 'Neutral', confidence: 0 }
 
@@ -189,7 +196,7 @@ const CRISIS_PHRASES = [
  * never depends on a fuzzy score: if this returns true the safety pathway opens.
  */
 export const checkCrisis = (text) => {
-  const normalized = String(text || '').toLowerCase()
+  const normalized = String(text || '').replace(/[\u2018\u2019\u2032]/g, "'").toLowerCase()
   const detected = CRISIS_PHRASES.find((phrase) => normalized.includes(phrase))
   return {
     isCrisis: Boolean(detected),

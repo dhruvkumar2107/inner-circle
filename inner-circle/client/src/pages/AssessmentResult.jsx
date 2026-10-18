@@ -54,8 +54,11 @@ export default function AssessmentResult() {
           <div className="crisis-options">
             {CRISIS_RESOURCES.map((item) => (
               <a key={item.number} href={`tel:${item.number.replace(/[^0-9+]/g, '')}`}>
-                <span className="crisis-icon"><HeartHandshake size={16} /></span>
-                <span className="crisis-copy"><b>{item.label}</b><small>{item.number} · {item.detail}</small></span>
+            <span className="crisis-icon"><HeartHandshake size={16} /></span>
+            <span className="crisis-copy">
+              <b>{t(`common.safety.resources.${item.key}.label`)}</b>
+              <small>{item.number} · {t(`common.safety.resources.${item.key}.detail`)}</small>
+            </span>
               </a>
             ))}
           </div>
