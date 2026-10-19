@@ -34,10 +34,69 @@ export default function Settings() {
   const t = useT()
   const {
     profile, consents, settings, moods, entries, wins, assessments, messages,
-    updateConsents, updateSettings, resetAll, signOut, toast,
+    updateConsents, updateSettings, resetAll, signOut, toast, updateProfile,
   } = useApp()
   const [confirming, setConfirming] = useState(false)
   const [perm, setPerm] = useState(() => permission())
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [editForm, setEditForm] = useState({ name: '', email: '', age: '', university: '' })
+  const [errors, setErrors] = useState({})
+  const [savingProfile, setSavingProfile] = useState(false)
+
+  const startEditProfile = () => {
+    setEditForm({
+      name: profile?.name || '',
+      email: profile?.email || '',
+      age: profile?.age ?? '',
+      university: profile?.university || '',
+    })
+    setErrors({})
+    setEditingProfile(true)
+  }
+
+  const cancelEditProfile = () => {
+    setEditingProfile(false)
+    setErrors({})
+    toast(t('settings.toasts.profileCancelled'))
+  }
+
+  const handleEditChange = (field) => (e) => {
+    const value = e.target.type === 'number' ? e.target.value : e.target.value
+    setEditForm((f) => ({ ...f, [field]: value }))
+    if (errors[field]) setErrors((err) => ({ ...err, [field]: null }))
+  }
+
+  const validateProfile = () => {
+    const newErrors = {}
+    if (!editForm.name.trim()) newErrors.name = 'nameRequired'
+    if (!editForm.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) newErrors.email = 'emailInvalid'
+    const age = Number(editForm.age)
+    if (!editForm.age || Number.isNaN(age)) newErrors.age = 'ageRequired'
+    else if (age < 18) newErrors.age = 'ageMin'
+    else if (age > 120) newErrors.age = 'ageMax'
+    if (!editForm.university.trim()) newErrors.university = 'universityRequired'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleProfileSave = async (e) => {
+    e.preventDefault()
+    if (!validateProfile()) return
+    setSavingProfile(true)
+    try {
+      updateProfile({
+        name: editForm.name.trim(),
+        email: editForm.email.trim().toLowerCase(),
+        age: Number(editForm.age),
+        university: editForm.university.trim(),
+      })
+      toast(t('settings.toasts.profileSaved'))
+      setEditingProfile(false)
+      setErrors({})
+    } finally {
+      setSavingProfile(false)
+    }
+  }
 
   const flipResearch = () => {
     const next = !consents.research
@@ -130,23 +189,93 @@ export default function Settings() {
 
         <section className="card card-pad">
           <SectionHead title={t('settings.profile.title')} sub={t('settings.profile.sub')} />
-          <div>
-            <InfoRow label={t('settings.profile.name')} value={profile?.name || '—'} />
-            <InfoRow label={t('settings.profile.email')} value={profile?.email || '—'} />
-            <InfoRow label={t('settings.profile.age')} value={profile?.age ?? '—'} />
-            <InfoRow label={t('settings.profile.university')} value={profile?.university || '—'} />
-            <InfoRow label={t('settings.profile.memberSince')} value={profile?.createdAt ? longDate(profile.createdAt) : '—'} />
-          </div>
-          {consents.research && (
-            <p className="small muted" style={{ margin: '0.8rem 0 0' }}>
-              {t('settings.profile.researchNote')}
-            </p>
+          {editingProfile ? (
+            <form onSubmit={handleProfileSave} noValidate>
+              <div className="field">
+                <label htmlFor="profile-name">{t('settings.profile.name')}</label>
+                <input
+                  id="profile-name"
+                  type="text"
+                  value={editForm.name}
+                  onChange={handleEditChange('name')}
+                  autoComplete="name"
+                  aria-invalid={!!errors.name}
+                />
+                {errors.name && <p className="form-error" role="alert">{t(`settings.profile.validation.${errors.name}`)}</p>}
+              </div>
+              <div className="field-row">
+                <div className="field">
+                  <label htmlFor="profile-email">{t('settings.profile.email')}</label>
+                  <input
+                    id="profile-email"
+                    type="email"
+                    value={editForm.email}
+                    onChange={handleEditChange('email')}
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                  />
+                  {errors.email && <p className="form-error" role="alert">{t(`settings.profile.validation.${errors.email}`)}</p>}
+                </div>
+                <div className="field">
+                  <label htmlFor="profile-age">{t('settings.profile.age')}</label>
+                  <input
+                    id="profile-age"
+                    type="number"
+                    min={18}
+                    max={120}
+                    value={editForm.age}
+                    onChange={handleEditChange('age')}
+                    aria-invalid={!!errors.age}
+                  />
+                  {errors.age && <p className="form-error" role="alert">{t(`settings.profile.validation.${errors.age}`)}</p>}
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="profile-university">{t('settings.profile.university')}</label>
+                <input
+                  id="profile-university"
+                  type="text"
+                  value={editForm.university}
+                  onChange={handleEditChange('university')}
+                  aria-invalid={!!errors.university}
+                />
+                {errors.university && <p className="form-error" role="alert">{t(`settings.profile.validation.${errors.university}`)}</p>}
+              </div>
+              <div style={{ display: 'flex', gap: '0.6rem', marginTop: '0.5rem' }}>
+                <button type="submit" className="btn btn-primary" disabled={savingProfile}>
+                  {savingProfile ? t('settings.profile.saving') : t('settings.profile.save')}
+                </button>
+                <button type="button" className="btn btn-ghost" onClick={cancelEditProfile}>
+                  {t('settings.profile.cancel')}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div>
+                <InfoRow label={t('settings.profile.name')} value={profile?.name || '—'} />
+                <InfoRow label={t('settings.profile.email')} value={profile?.email || '—'} />
+                <InfoRow label={t('settings.profile.age')} value={profile?.age ?? '—'} />
+                <InfoRow label={t('settings.profile.university')} value={profile?.university || '—'} />
+                <InfoRow label={t('settings.profile.memberSince')} value={profile?.createdAt ? longDate(profile.createdAt) : '—'} />
+              </div>
+              {consents.research && (
+                <p className="small muted" style={{ margin: '0.8rem 0 0' }}>
+                  {t('settings.profile.researchNote')}
+                </p>
+              )}
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.6rem' }}>
+                <button type="button" className="btn btn-outline" onClick={startEditProfile}>
+                  {t('settings.profile.edit')}
+                </button>
+              </div>
+              <div style={{ marginTop: '1rem' }}>
+                <Note tone="grey" icon={ShieldCheck}>
+                  {t('settings.profile.passwordNote')}
+                </Note>
+              </div>
+            </>
           )}
-          <div style={{ marginTop: '1rem' }}>
-            <Note tone="grey" icon={ShieldCheck}>
-              {t('settings.profile.passwordNote')}
-            </Note>
-          </div>
         </section>
 
         <section className="card card-pad">
@@ -210,6 +339,19 @@ export default function Settings() {
                 aria-pressed={settings.voiceGuidance}
                 aria-label={t('settings.prefs.voice')}
                 onClick={flipVoice}
+              />
+            </div>
+            <div className="setting-row">
+              <div>
+                <b>{t('settings.prefs.sentimentDemo')}</b>
+                <small>{t('settings.prefs.sentimentDemoHint')}</small>
+              </div>
+              <button
+                type="button"
+                className={`switch ${settings.showSentimentDemo ? 'on' : ''}`}
+                aria-pressed={settings.showSentimentDemo}
+                aria-label={t('settings.prefs.sentimentDemo')}
+                onClick={() => updateSettings({ showSentimentDemo: !settings.showSentimentDemo })}
               />
             </div>
           </div>

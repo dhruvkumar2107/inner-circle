@@ -168,8 +168,6 @@ export function Modal({ title, kicker, onClose, children, footer, wide = false, 
 
 /** Helpline entries are keyed so each language file supplies its own wording. */
 export const CRISIS_RESOURCES = [
-  { key: 'teleManas', number: '14416' },
-  { key: 'kiran', number: '1800-599-0019' },
   { key: 'emergency', number: '112' },
 ]
 
@@ -187,8 +185,8 @@ export function SafetyModal({ onClose, trigger = 'manual' }) {
       onClose={onClose}
       footer={(
         <>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={onClose}>{t('common.safety.safeContinue')}</button>
-          <Link className="btn btn-outline" to="/professional" onClick={onClose}>{t('common.safety.deptContact')}</Link>
+          <Link className="btn btn-primary" to="/professional" onClick={onClose}>{t('common.safety.deptContact')}</Link>
+          <button className="btn btn-ghost" onClick={onClose}>{t('common.close')}</button>
         </>
       )}
     >

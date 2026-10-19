@@ -12,6 +12,7 @@ const KEYS = {
   wins: 'ic.wins',
   assessments: 'ic.assessments',
   messages: 'ic.messages',
+  appts: 'ic.appts',
 }
 
 const DEFAULT_SETTINGS = {
@@ -19,6 +20,7 @@ const DEFAULT_SETTINGS = {
   voiceGuidance: false,
   reminders: false,
   reminderTime: '19:00',
+  showSentimentDemo: false,
 }
 
 /**
@@ -46,6 +48,7 @@ export function AppProvider({ children }) {
   const [wins, setWins] = useState(() => load(KEYS.wins, []))
   const [assessments, setAssessments] = useState(() => load(KEYS.assessments, []))
   const [messages, setMessages] = useState(() => load(KEYS.messages, []))
+  const [appts, setAppts] = useState(() => load(KEYS.appts, []))
   const [safetyOpen, setSafetyOpen] = useState(false)
   const [safetyTrigger, setSafetyTrigger] = useState('manual')
   const [toasts, setToasts] = useState([])
@@ -59,6 +62,7 @@ export function AppProvider({ children }) {
   useEffect(() => save(KEYS.wins, wins), [wins])
   useEffect(() => save(KEYS.assessments, assessments), [assessments])
   useEffect(() => save(KEYS.messages, messages.slice(-80)), [messages])
+  useEffect(() => save(KEYS.appts, appts), [appts])
 
   const toast = useCallback((message, tone = 'success') => {
     const id = (toastId.current += 1)
@@ -143,6 +147,14 @@ export function AppProvider({ children }) {
   }, [])
   const removeAssessment = useCallback((id) => setAssessments((list) => list.filter((a) => a.id !== id)), [])
 
+  const addAppointment = useCallback((appt) => {
+    const next = { ...appt, id: uid(), status: 'requested', createdAt: new Date().toISOString() }
+    setAppts((list) => [...list, next])
+    return next
+  }, [])
+  const cancelAppointment = useCallback((id) => setAppts((list) => list.filter((a) => a.id !== id)), [])
+  const rescheduleAppointment = useCallback((id, slot) => setAppts((list) => list.map((a) => a.id === id ? { ...a, at: slot, status: 'requested' } : a)), [])
+
   const pushMessage = useCallback((message) => {
     const next = { id: uid(), at: new Date().toISOString(), ...message }
     setMessages((list) => [...list, next])
@@ -158,6 +170,14 @@ export function AppProvider({ children }) {
 
   const updateSettings = useCallback((patch) => setSettings((s) => ({ ...s, ...patch })), [])
   const updateConsents = useCallback((patch) => setConsents((c) => ({ ...c, ...patch })), [])
+
+  const updateProfile = useCallback((patch) => {
+    setProfile((p) => {
+      if (!p) return p
+      const next = { ...p, ...patch }
+      return next
+    })
+  }, [])
 
   /** Rolling sentiment of recent user messages — the fuzzy engine's sentiment input. */
   const recentSentiment = useMemo(() => {
@@ -198,6 +218,7 @@ export function AppProvider({ children }) {
     wins,
     assessments,
     messages,
+    appts,
     todaysMood,
     recentSentiment,
     register,
@@ -211,10 +232,14 @@ export function AppProvider({ children }) {
     removeWin,
     addAssessment,
     removeAssessment,
+    addAppointment,
+    cancelAppointment,
+    rescheduleAppointment,
     pushMessage,
     clearMessages,
     updateSettings,
     updateConsents,
+    updateProfile,
     safetyOpen,
     safetyTrigger,
     openSafety,

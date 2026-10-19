@@ -203,22 +203,24 @@ export default function Companion() {
         </div>
       </header>
 
-      <div style={{ padding: '0.7rem 1.5rem 0' }}>
-        <div className="analysis-strip">
-          <b>{t('companion.analysis.title')}</b>
-          <span className={`meter ${recentSentiment < -0.12 ? 'neg' : ''}`} aria-hidden="true">
-            <i style={{ width: `${Math.round(((recentSentiment + 1) / 2) * 100)}%` }} />
-          </span>
-          <span>{t('companion.analysis.lastFive', { tone: t(sentimentLabelKey(toneLabel(recentSentiment))), score: recentSentiment })}</span>
-          {lastUser && (
-            <span>
-              · {t('companion.analysis.latest')} <b>{t(emotionLabelKey(lastUser.emotion))}</b>
-              {lastUser.topic && lastUser.topic !== 'General' ? ` · ${t(topicKey(lastUser.topic))}` : ''}
+      {settings.showSentimentDemo && (
+        <div style={{ padding: '0.7rem 1.5rem 0' }}>
+          <div className="analysis-strip">
+            <b>{t('companion.analysis.title')}</b>
+            <span className={`meter ${recentSentiment < -0.12 ? 'neg' : ''}`} aria-hidden="true">
+              <i style={{ width: `${Math.round(((recentSentiment + 1) / 2) * 100)}%` }} />
             </span>
-          )}
-          <Badge tone="demo">{t('common.demo')}</Badge>
+            <span>{t('companion.analysis.lastFive', { tone: t(sentimentLabelKey(toneLabel(recentSentiment))), score: recentSentiment })}</span>
+            {lastUser && (
+              <span>
+                · {t('companion.analysis.latest')} <b>{t(emotionLabelKey(lastUser.emotion))}</b>
+                {lastUser.topic && lastUser.topic !== 'General' ? ` · ${t(topicKey(lastUser.topic))}` : ''}
+              </span>
+            )}
+            <Badge tone="demo">{t('common.demo')}</Badge>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="chat-thread" ref={threadRef}>
         {messages.length === 0 && (

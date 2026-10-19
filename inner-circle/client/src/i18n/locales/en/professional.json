@@ -1,17 +1,70 @@
 {
   "kicker": "PROFESSIONAL SUPPORT",
   "title": "Contact a Professional",
-  "sub": "Find urgent support whenever you need it. Verified professional-support details will appear here once the department confirms them.",
+  "sub": "Find urgent support whenever you need it. Verified department and clinician details appear below.",
   "urgentNoteBefore": "You asked for urgent support, so those options are shown above. If you closed the panel, use",
   "urgentNoteAfter": "below whenever you want them again.",
   "pending": {
     "title": "Professional details are being confirmed",
     "body": "Verified department, clinician and counselling-office information will be added here once the university confirms it. Until then, the urgent support options below are always available."
   },
+  "dept": {
+    "title": "Department of Psychiatry",
+    "demoLabel": "Demo profile — not a real department contact",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "Address",
+    "hours": "Hours",
+    "call": "Call",
+    "directions": "Directions"
+  },
+  "nearby": {
+    "title": "Nearby help",
+    "ambulanceLabel": "Ambulance (108)",
+    "ambulanceDetail": "Emergency ambulance service",
+    "hospitalLabel": "Nearest hospital",
+    "hospitalDetail": "Accident & emergency department"
+  },
+  "team": {
+    "title": "Available clinicians (demo)",
+    "demoNotice": "All profiles below are fictional demo profiles — not real clinicians. Appointment requests are simulated.",
+    "qualification": "Qualification",
+    "experience": "Experience",
+    "areas": "Support areas",
+    "availability": "Available slots",
+    "book": "Request appointment",
+    "noSlots": "No slots available"
+  },
+  "schedule": {
+    "title": "Request an appointment",
+    "selectClinician": "Choose a clinician",
+    "selectSlot": "Choose a date and time",
+    "reason": "Reason (optional)",
+    "reasonHint": "What would you like to discuss?",
+    "submit": "Submit request",
+    "submitting": "Submitting…",
+    "success": "Appointment requested. The department will confirm by email.",
+    "error": "Could not submit request. Please try again."
+  },
+  "appointments": {
+    "title": "Your appointment requests",
+    "empty": "No appointment requests yet.",
+    "status": {
+      "requested": "Requested — awaiting confirmation",
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled"
+    },
+    "cancel": "Cancel",
+    "reschedule": "Reschedule",
+    "noAppointments": "You have no appointment requests."
+  },
   "crisis": {
     "title": "If you may be in immediate danger now",
     "sub": "Reach a real person straight away — you never have to wait for the app.",
     "verifyNote": "Helpline numbers can change — verify every number before you rely on it.",
-    "note": "Inner Circle is not monitored 24/7 and is not an emergency service. If you may be in immediate danger, contact emergency services or someone you trust right now."
+    "note": "Inner Circle is not monitored 24/7 and is not an emergency service. If you may be in immediate danger, contact emergency services or someone you trust right now.",
+    "resources": {
+      "emergency": { "label": "Emergency services", "detail": "If you may be in immediate danger right now" }
+    }
   }
 }

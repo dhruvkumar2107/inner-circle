@@ -12,6 +12,20 @@
     "age": "Age",
     "university": "University",
     "memberSince": "Member since",
+    "edit": "Edit profile",
+    "save": "Save changes",
+    "cancel": "Cancel",
+    "saving": "Saving…",
+    "saved": "Profile updated.",
+    "cancelled": "Changes discarded.",
+    "validation": {
+      "nameRequired": "Name is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "ageRequired": "Age is required.",
+      "ageMin": "You must be at least 18 years old.",
+      "ageMax": "Please enter a valid age.",
+      "universityRequired": "University is required."
+    },
     "researchNote": "You have chosen to contribute anonymised research feedback — turn it off under Consent below.",
     "passwordNote": "Your password is kept only as a demo hash in this browser. It is never shown here and never sent anywhere."
   },
@@ -31,6 +45,8 @@
     "ttsHint": "Your browser speaks each reply as it arrives. Everything is still written out in full.",
     "voice": "Spoken guidance in breathing exercises",
     "voiceHint": "Steps such as inhale, hold and exhale are spoken while you follow along.",
+    "sentimentDemo": "Show simulated sentiment analysis in the companion",
+    "sentimentDemoHint": "Displays a live sentiment strip for the last five messages. Labelled as simulated and only for demo/evaluation.",
     "ttsOn": "Companion replies will be read aloud.",
     "ttsOff": "Companion replies will stay quiet.",
     "voiceOn": "Spoken guidance in breathing exercises is on.",
@@ -81,7 +97,9 @@
   "toasts": {
     "researchOn": "Research feedback turned on (demo).",
     "researchOff": "Research feedback turned off.",
-    "deleted": "All local data deleted."
+    "deleted": "All local data deleted.",
+    "profileSaved": "Profile updated.",
+    "profileCancelled": "Changes discarded."
   },
   "deleteModal": {
     "kicker": "THIS CANNOT BE UNDONE",

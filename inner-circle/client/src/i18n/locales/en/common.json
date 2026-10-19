@@ -58,12 +58,10 @@
     "title": "Let's find the right support, right now.",
     "bodyManual": "If you may be in immediate danger, contact emergency services or someone you trust now. Inner Circle is not an emergency service and is not monitored continuously.",
     "bodyAssessment": "You indicated something on a safety-sensitive question, and that matters. Inner Circle is not monitored around the clock, so please reach out to a person directly.",
-    "safeContinue": "I'm safe for now — continue",
     "deptContact": "Department contact",
-    "verifyNote": "Prototype numbers for India — verify every number, the campus counselling contact and the Department of Psychiatry details before launch.",
+    "deptUnavailable": "Department contact details couldn't be loaded. Please try again in a moment.",
+    "verifyNote": "Prototype numbers for India — verify every number and the Department of Psychiatry details before launch.",
     "resources": {
-      "teleManas": { "label": "Tele-MANAS", "detail": "India · 24×7 mental-health helpline" },
-      "kiran": { "label": "KIRAN helpline", "detail": "Government mental-health support" },
       "emergency": { "label": "Emergency services", "detail": "If you may be in immediate danger right now" }
     }
   }

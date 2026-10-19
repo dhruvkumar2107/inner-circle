@@ -2,79 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, RotateCcw } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useT } from '../../i18n'
-
-const SIZE = 6
-const TILES = ['#6e9169', '#a7c9a4', '#efe2bc', '#a9c6d9', '#dcae55', '#c07f7a']
-
-const pick = () => Math.floor(Math.random() * TILES.length)
-
-function makeBoard() {
-  const b = []
-  for (let i = 0; i < SIZE * SIZE; i += 1) {
-    const row = Math.floor(i / SIZE)
-    const col = i % SIZE
-    const banned = new Set()
-    if (col >= 2 && b[i - 1] === b[i - 2]) banned.add(b[i - 1])
-    if (row >= 2 && b[i - SIZE] === b[i - SIZE * 2]) banned.add(b[i - SIZE])
-    let v = pick()
-    while (banned.has(v)) v = pick()
-    b.push(v)
-  }
-  return b
-}
-
-function findMatches(b) {
-  const hit = new Set()
-  for (let r = 0; r < SIZE; r += 1) {
-    let run = 1
-    for (let c = 1; c < SIZE; c += 1) {
-      const i = r * SIZE + c
-      if (b[i] !== null && b[i] === b[i - 1]) run += 1
-      else {
-        if (run >= 3) for (let k = 1; k <= run; k += 1) hit.add(i - k)
-        run = 1
-      }
-    }
-    if (run >= 3) for (let k = 1; k <= run; k += 1) hit.add(SIZE * (r + 1) - k)
-  }
-  for (let c = 0; c < SIZE; c += 1) {
-    let run = 1
-    for (let r = 1; r < SIZE; r += 1) {
-      const i = r * SIZE + c
-      if (b[i] !== null && b[i] === b[i - SIZE]) run += 1
-      else {
-        if (run >= 3) for (let k = 1; k <= run; k += 1) hit.add(i - k * SIZE)
-        run = 1
-      }
-    }
-    if (run >= 3) for (let k = 1; k <= run; k += 1) hit.add((SIZE - 1) * SIZE + c - (k - 1) * SIZE)
-  }
-  return hit
-}
-
-function collapse(b, matched) {
-  const out = b.slice()
-  matched.forEach((i) => { out[i] = null })
-  for (let c = 0; c < SIZE; c += 1) {
-    const stack = []
-    for (let r = SIZE - 1; r >= 0; r -= 1) {
-      const v = out[r * SIZE + c]
-      if (v !== null) stack.push(v)
-    }
-    for (let r = SIZE - 1; r >= 0; r -= 1) {
-      out[r * SIZE + c] = stack[SIZE - 1 - r] ?? pick()
-    }
-  }
-  return out
-}
-
-const adjacent = (a, b) => {
-  const ar = Math.floor(a / SIZE)
-  const ac = a % SIZE
-  const br = Math.floor(b / SIZE)
-  const bc = b % SIZE
-  return Math.abs(ar - br) + Math.abs(ac - bc) === 1
-}
+import { SIZE, TILES, adjacent, findMatches, makeBoard, resolveBoard, swap } from '../../lib/matchThree'
 
 export default function MatchThree({ best = 0, onBest, onBack }) {
   const { toast } = useApp()
@@ -104,17 +32,8 @@ export default function MatchThree({ best = 0, onBest, onBack }) {
   }, [])
 
   const resolve = useCallback((startBoard) => {
-    let b = startBoard
-    let gained = 0
-    let chain = 0
-    for (;;) {
-      const matched = findMatches(b)
-      if (matched.size === 0) break
-      chain += 1
-      gained += matched.size * chain
-      b = collapse(b, matched)
-    }
-    setBoard(b)
+    const { board: settled, gained, chain } = resolveBoard(startBoard)
+    setBoard(settled)
     const next = scoreRef.current + gained
     scoreRef.current = next
     setScore(next)
@@ -142,8 +61,7 @@ export default function MatchThree({ best = 0, onBest, onBack }) {
       return
     }
     const a = selected
-    const next = board.slice()
-    ;[next[a], next[i]] = [next[i], next[a]]
+    const next = swap(board, a, i)
     setSelected(null)
     if (findMatches(next).size === 0) {
       setBusy(true)
